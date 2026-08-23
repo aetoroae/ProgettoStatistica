@@ -18,9 +18,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
 
-\title{\textbf{Analisi Statistica ed Econometrica dei Costi\\ Assicurativi Sanitari} \\[0.3em]
-\large Medical Cost Personal Datasets (\texttt{insurance.csv})}
-\author{Relazione di Data Science}
+\title{DataMedical Cost Personal Datasets (\texttt{insurance.csv})}
+\author{Cristian Trofusha, Samuele Epiceno, Giuseppe Antonio Arcuri, Miriam Formaro}
 \date{\today}
 
 \begin{document}
@@ -41,7 +40,7 @@ Per ciascun individuo sono disponibili $7$ variabili:
 \begin{itemize}[nosep]
     \item \textbf{charges} (variabile target, continua): spesa medica annua
     addebitata dall'assicurazione, in USD;
-    \item \textbf{age} (continua): eta' dell'assicurato, 18--64 anni;
+    \item \textbf{age} (continua): età dell'assicurato, 18--64 anni;
     \item \textbf{sex} (categorica): \texttt{male} / \texttt{female};
     \item \textbf{bmi} (continua): indice di massa corporea ($\mathrm{kg/m^2}$);
     \item \textbf{children} (discreta): numero di figli a carico coperti dalla polizza, 0--5;
@@ -56,16 +55,16 @@ il dataset di lavoro consta di $n=1337$ osservazioni, senza valori mancanti.
 \subsection{Obiettivi dell'analisi}
 L'analisi persegue tre obiettivi complementari:
 \begin{enumerate}[nosep]
-    \item \textbf{Descrittivo}: caratterizzare la distribuzione di \texttt{charges}
-    e le relazioni bivariate con i regressori disponibili;
+    \item \textbf{Descrittivo}: visualizzare la distribuzione di \texttt{charges}
+    e le relazioni con i regressori disponibili;
     \item \textbf{Inferenziale}: stimare un modello di regressione lineare che
-    identifichi i determinanti statisticamente significativi della spesa
-    sanitaria, valutandone la forma funzionale ottimale, la significativita'
-    congiunta e individuale dei coefficienti, e la presenza di multicollinearita'
+    identifichi i regressori statisticamente significativi della spesa
+    sanitaria, valutandone la forma funzionale ottimale, la significatività
+    congiunta e individuale dei regressori, e gestire l'eventuale presenza di multicollinearita'
     ed eteroschedasticita';
     \item \textbf{Predittivo}: confrontare tecniche di regolarizzazione
     (Ridge, LASSO, Elastic Net) con l'OLS classico in termini di errore di
-    previsione fuori campione, valutandone la capacita' di selezione automatica
+    previsione fuori campione, valutandone la capacità di selezione automatica
     delle variabili.
 \end{enumerate}
 
@@ -75,8 +74,8 @@ grafica preliminare, ci si attende che lo stato di fumatore (\texttt{smoker})
 sia il principale determinante della spesa, seguito da eta' e BMI, con un
 effetto marginale del numero di figli; le variabili \texttt{sex} e
 \texttt{region} sono attese come non (o debolmente) significative. Data la
-forte asimmetria destra di \texttt{charges}, si ipotizza inoltre la presenza
-di eteroschedasticita' nei residui del modello in livelli.
+forte asimmetria di \texttt{charges}, si ipotizza inoltre la presenza
+di eteroschedasticità nei residui del modello in livelli.
 
 % =======================================================================
 \section{Descrizione del dataset e Analisi Preliminare}
@@ -106,7 +105,7 @@ Le variabili categoriche mostrano le seguenti frequenze: \texttt{sex}
 sostanzialmente bilanciato (50.5\% \emph{male}, 49.5\% \emph{female});
 \texttt{smoker} fortemente sbilanciato (79.5\% \emph{no}, 20.5\% \emph{yes},
 coerente con la prevalenza reale del fumo); \texttt{region}
-pressoche' equidistribuita (southeast 27.2\%, le altre tre $\approx$24\%
+pressochè equidistribuita (southeast 27.2\%, le altre tre $\approx$24\%
 ciascuna).
 
 \subsection{Codifica delle variabili categoriche}
@@ -115,8 +114,6 @@ mediante \emph{one-hot encoding}, escludendo la prima categoria in ordine
 alfabetico per ciascuna variabile (\texttt{drop\_first=True}) al fine di
 evitare la \emph{dummy variable trap}, ossia la collinearita' perfetta che si
 avrebbe includendo tutte le categorie insieme all'intercetta:
-$$\sum_{c} D_c = 1 \quad \Rightarrow \quad \text{collinearita' esatta con la costante}.$$
-
 Le categorie di riferimento (baseline, corrispondenti a coefficiente nullo
 per costruzione) sono: \texttt{sex}=\emph{female}, \texttt{smoker}=\emph{no},
 \texttt{region}=\emph{northeast}. Si ottengono cosi' 8 regressori:
@@ -125,33 +122,32 @@ per costruzione) sono: \texttt{sex}=\emph{female}, \texttt{smoker}=\emph{no},
 \texttt{region\_southwest}.
 
 \subsection{Distribuzione della variabile target}
-La Figura~\ref{fig:dist_charges} mostra istogramma e densita' di
+La Figura~\ref{fig:dist_charges} mostra istogramma e densità di
 \texttt{charges} in livelli e in logaritmo. La distribuzione in livelli e'
-fortemente asimmetrica a destra: skewness $=1.52$, curtosi in eccesso
-$=1.60$ (rispetto a 0 della normale), con media (\$13\,279) nettamente
-superiore alla mediana (\$9\,386). La forma e' inoltre chiaramente
+fortemente asimmetrica: skewness $=1.52$, curtosi$=1.60$ (rispetto a 0 della normale), con media (\$13\,279) nettamente
+superiore alla mediana (\$9\,386). La forma è inoltre chiaramente
 \textbf{bimodale}, con un secondo addensamento intorno a \$35\,000--45\,000.
 La trasformazione logaritmica riduce l'asimmetria ma non elimina del tutto
-la bimodalita' residua.
+la bimodalità residua.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{output/01_charges_distribution.png}
-\caption{Istogramma e densita' di \texttt{charges} (sinistra) e di
+\caption{Istogramma e densità di \texttt{charges} (sinistra) e di
 $\log(\texttt{charges})$ (destra).}
 \label{fig:dist_charges}
 \end{figure}
 
-La Figura~\ref{fig:charges_factors} chiarisce l'origine della bimodalita':
+La Figura~\ref{fig:charges_factors} chiarisce l'origine della bimodalità:
 lo stato di fumatore separa nettamente due sotto-popolazioni con spesa
 media molto diversa (mediana $\approx\$34\,500$ per i fumatori contro
 $\approx\$7\,300$ per i non fumatori), e all'interno di ciascun gruppo la
-spesa cresce con eta' e BMI.
+spesa cresce con età e BMI.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{output/02_charges_by_factors.png}
-\caption{\texttt{charges} per stato di fumatore (boxplot) e relazione con
+\caption{\texttt{charges} per stato di fumatore e relazione con
 \texttt{age}/\texttt{bmi} colorata per \texttt{smoker}.}
 \label{fig:charges_factors}
 \end{figure}
@@ -159,27 +155,27 @@ spesa cresce con eta' e BMI.
 \subsection{Matrice di correlazione}
 La Figura~\ref{fig:corr} riporta la matrice di correlazione di Pearson tra
 tutte le variabili (dopo l'encoding). La correlazione con \texttt{charges}
-piu' forte e' quella con \texttt{smoker\_yes} ($\rho=0.787$), seguita da
+più forte è quella con \texttt{smoker\_yes} ($\rho=0.787$), seguita da
 \texttt{age} ($\rho=0.298$) e \texttt{bmi} ($\rho=0.198$); le altre variabili
 mostrano correlazioni deboli ($|\rho|<0.08$). Le correlazioni tra i
 regressori sono contenute (il valore assoluto massimo, $0.35$, si osserva
-tra le dummy di regione per costruzione), suggerendo a priori l'assenza di
-multicollinearita' severa -- ipotesi verificata formalmente nella
+tra le dummy di regione per costruzione), suggerendo a l'assenza di
+multicollinearità grave, ipotesi verificata formalmente nella
 Sezione~\ref{sec:multicollinearita}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{output/03_correlation_heatmap.png}
-\caption{Matrice di correlazione di Pearson.}
+\caption{Matrice di correlazione.}
 \label{fig:corr}
 \end{figure}
 
 \subsection{Matrice di dispersione}
 La Figura~\ref{fig:scatter} mostra la scatterplot matrix delle variabili
-numeriche con rette di regressione OLS sovrapposte. La relazione
+numeriche con rette di regressione costruite tramite OLS. La relazione
 \texttt{age}--\texttt{charges} appare quasi lineare "a strati" (dovuta ai
-sottogruppi \texttt{smoker}); \texttt{bmi}--\texttt{charges} e' positiva ma
-piu' rumorosa; \texttt{children}--\texttt{charges} e' pressoche' piatta.
+sottogruppi \texttt{smoker}); \texttt{bmi}--\texttt{charges} è positiva ma
+più rumorosa; \texttt{children}--\texttt{charges} è pressochè piatta.
 
 \begin{figure}[H]
 \centering
@@ -194,7 +190,7 @@ regressione.}
 % =======================================================================
 
 \subsection{Il modello di regressione lineare multipla}
-Il modello di partenza (forma lin-lin, tutte le variabili in livelli) e':
+Il modello di partenza (forma lin-lin, tutte le variabili in livelli) è:
 \begin{equation}
 \texttt{charges}_i = \beta_0 + \beta_1\,\texttt{age}_i + \beta_2\,\texttt{bmi}_i
 + \beta_3\,\texttt{children}_i + \beta_4\,\texttt{sex\_male}_i
@@ -202,8 +198,7 @@ Il modello di partenza (forma lin-lin, tutte le variabili in livelli) e':
 + u_i
 \label{eq:modello_completo}
 \end{equation}
-stimato con il metodo dei minimi quadrati ordinari (OLS), sotto le ipotesi
-classiche di Gauss-Markov ($\mathbb{E}[u_i|X_i]=0$,
+stimato con il metodo dei minimi quadrati ordinari, sotto le ipotesi di Gauss-Markov ($\mathbb{E}[u_i|X_i]=0$,
 $\mathrm{Var}(u_i|X_i)=\sigma^2$, $\mathrm{Cov}(u_i,u_j|X)=0$ per $i\neq j$).
 
 \subsection{Modello completo}
@@ -233,12 +228,12 @@ region\_southwest  & $-960.08$    & 478.11 & $-2.01$  & 0.045    & * \\
 \end{tabular}
 \end{table}
 
-I residui del modello completo mostrano forte non-normalita' (skewness
-$=1.21$, curtosi $=5.65$, Jarque--Bera $=716.6$, $p\approx0$), un primo
-segnale d'allarme che verra' approfondito nella Sezione~\ref{sec:eteroschedasticita}.
+I residui del modello completo mostrano forte non-normalità (skewness
+$=1.21$, curtosi $=5.65$), un primo
+segnale d'allarme che verrà approfondito nella Sezione~\ref{sec:eteroschedasticita}.
 
-\subsection{Confronto delle forme funzionali}
-Sono state confrontate quattro specificazioni: lin-lin, log-log, log-lin e
+\subsection{Confronto dei possibili modelli}
+Sono state confrontate quattro modelli: lin-lin, log-log, log-lin e
 lin-log:
 \begin{align}
 \text{lin-lin:} \quad & y = \beta_0 + \boldsymbol{\beta}'\mathbf{x} + u \\
@@ -247,8 +242,8 @@ lin-log:
 \text{lin-log:} \quad & y = \beta_0 + \beta_1\ln(\texttt{age}) + \beta_2\ln(\texttt{bmi}) + \boldsymbol{\gamma}'\mathbf{z} + u
 \end{align}
 dove $\mathbf{z}$ raccoglie \texttt{children} e le dummy (che restano sempre
-in livelli, poiche' il logaritmo non e' definito per \texttt{children}=0 e
-privo di senso economico per variabili 0/1).
+in livelli, poichè il logaritmo non è definito per \texttt{children}=0 e
+privo di senso per variabili binarie).
 
 \begin{table}[H]
 \centering
@@ -266,32 +261,6 @@ lin-log & charges       & 0.744 & 0.743 & 27\,127.8 & 1.18 & 5.45 \\
 \end{tabular}
 \end{table}
 
-$R^2$, AIC e BIC non sono direttamente confrontabili tra modelli con
-variabile dipendente su scala diversa (charges vs.\ $\ln$(charges)), poiche'
-la devianza totale da spiegare cambia; il confronto e' valido solo
-\emph{entro} lo stesso gruppo (lin-lin vs.\ lin-log; log-log vs.\ log-lin).
-Un confronto in scala originaria (\$), ottenuto ritrasformando le previsioni
-dei modelli in $\ln(y)$ con lo \emph{smearing estimator} di Duan (1983)
-\begin{equation}
-\hat{y}_i = \exp(\hat{u}_i^{\ln}) \cdot \underbrace{\frac{1}{n}\sum_{j=1}^n \exp(\hat{e}_j)}_{\text{fattore di smearing}}
-\end{equation}
-(che corregge la distorsione da disuguaglianza di Jensen, $\mathbb{E}[\exp(u)]\neq\exp(\mathbb{E}[u])$),
-favorisce sistematicamente i modelli in livelli poiche' l'OLS lin-lin
-minimizza esattamente la somma dei quadrati in \$ per costruzione: non e'
-quindi un criterio adeguato per la scelta della forma funzionale. Il
-criterio adottato e' invece: (i) confronto entro lo stesso scale di $Y$
-($R^2_{adj}$/AIC/BIC), che premia il lin-lin nel gruppo charges e il
-log-log (di poco) nel gruppo $\ln$(charges); (ii) skewness/curtosi dei
-residui, che misurano quanto la trasformazione mitiga l'asimmetria vista
-in Sez.~2 -- criterio in cui il lin-lin risulta il migliore in assoluto.
-La forma \textbf{lin-lin} viene quindi selezionata per lo Step 2, essendo la
-piu' parsimoniosa, con il miglior fit nel proprio gruppo e i residui meno
-asimmetrici; l'eventuale rimedio della trasformazione logaritmica viene
-riesaminato formalmente alla luce dei test di eteroschedasticita'
-(Sezione~\ref{sec:eteroschedasticita}), coerentemente con l'evidenza che
-nessuna delle due trasformazioni elimina la bimodalita' residua legata a
-\texttt{smoker}.
-
 \subsection{Selezione del modello: eliminazione dei regressori non significativi e Best Subset Selection}
 Sono state applicate due procedure indipendenti sulla forma lin-lin:
 \begin{enumerate}[nosep]
@@ -302,7 +271,7 @@ Sono state applicate due procedure indipendenti sulla forma lin-lin:
     \texttt{region\_southwest} ($p=0.058$) $\to$ \texttt{region\_southeast}
     ($p=0.136$).
     \item \textbf{Best Subset Selection}: ricerca esaustiva su tutte le
-    $2^8-1=255$ combinazioni non vuote di regressori, minimizzando il
+    $2^8-1=255$ combinazioni non vuote di regressori (Ciò è possibile visto il basso numero di regressori)s, minimizzando il
     criterio BIC
     \begin{equation}
     \mathrm{BIC} = n\ln(\mathrm{SSE}/n) + k\ln(n)
@@ -342,7 +311,7 @@ smoker\_yes & 23\,810.40 & 411.41 & 57.87 & $<0.001$ & $[23\,003,\,24\,617]$ \\
 \end{tabular}
 \end{table}
 
-\textbf{Bonta' di adattamento:} $R^2=0.750$, $R^2_{adj}=0.749$ -- il modello
+\textbf{Bontà di adattamento:} $R^2=0.750$, $R^2_{adj}=0.749$ -- il modello
 spiega il 75\% della varianza di \texttt{charges}, valore praticamente
 identico a quello del modello completo (0.751), a conferma che le variabili
 escluse non aggiungono potere esplicativo.
@@ -351,8 +320,8 @@ escluse non aggiungono potere esplicativo.
 \begin{equation}
 F = \frac{(\mathrm{SSR}_{ristretto}-\mathrm{SSR}_{completo})/q}{\mathrm{SSR}_{completo}/(n-k-1)} \;\sim\; F_{q,\,n-k-1} \quad \text{sotto } H_0:\beta_1=\dots=\beta_k=0
 \end{equation}
-$F(4,1332)=996.5$, $p\approx0$: si rigetta nettamente $H_0$, il modello nel
-suo complesso e' altamente significativo.
+$F(4,1332)=996.5$, $p\approx0$: si rigetta $H_0$, il modello nel
+suo complesso è significativo.
 
 \textbf{Test $t$ sui singoli coefficienti} ($H_0:\beta_j=0$ vs.\
 $H_1:\beta_j\neq0$, statistica $t=\hat\beta_j/\mathrm{SE}(\hat\beta_j)$):
@@ -375,7 +344,7 @@ del modello finale.
 
 \begin{table}[H]
 \centering
-\caption{Variance Inflation Factor -- modello finale}
+\caption{Variance Inflation Factor, modello finale}
 \label{tab:vif}
 \begin{tabular}{lr}
 \toprule
@@ -390,8 +359,8 @@ smoker\_yes & 1.001 \\
 \end{table}
 
 Tutti i VIF sono prossimi a 1 (soglia di allarme convenzionale:
-$\mathrm{VIF}\geq10$; attenzione per $5\leq\mathrm{VIF}<10$): nessuna
-multicollinearita' rilevante tra i regressori.
+$\mathrm{VIF}\geq10$): nessuna
+multicollinearità rilevante tra i regressori.
 
 Come indicatore complementare e' stato calcolato il \textbf{Condition
 Number} $k$ secondo il metodo di Belsley--Kuh--Welsch: le colonne della
@@ -422,27 +391,27 @@ finale.
 La Figura~\ref{fig:resid_fitted} mostra i residui del modello finale
 \eqref{eq:modello_finale} contro i valori stimati, colorati per stato di
 fumatore. Si osservano due nubi nettamente separate, ciascuna con
-un pattern "a imbuto"/curvo -- sintomo combinato di eteroschedasticita' e
-di non linearita' residua (verosimile interazione \texttt{smoker}
+un pattern non lineare, sintomo di eteroschedasticità e
+di non linearità residua (verosimile interazione \texttt{smoker}
 $\times$ \texttt{bmi} non inclusa nel modello additivo). L'istogramma dei
-residui mostra una bimodalita' residua rispetto alla densita' normale
+residui mostra una bimodalità residua rispetto alla densità normale
 sovrapposta.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{output/07_residuals_diagnostics.png}
 \caption{Residui vs.\ Fitted values (colorati per \texttt{smoker}) e
-istogramma dei residui con densita' normale teorica sovrapposta.}
+istogramma dei residui con densità normale teorica sovrapposta.}
 \label{fig:resid_fitted}
 \end{figure}
 
 Il Q-Q plot (Figura~\ref{fig:qqplot}) conferma code pesanti a destra e
-scostamento sistematico dalla normalita'.
+di discostamento dalla normalità'.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.55\textwidth]{output/08_qqplot_residuals.png}
-\caption{Q-Q plot dei residui studentizzati del modello finale.}
+\caption{Q-Q plot dei residui del modello finale.}
 \label{fig:qqplot}
 \end{figure}
 
@@ -471,7 +440,7 @@ White         & LM$=128.25$ & $4.65\times10^{-21}$ & 10.80 & $3.39\times10^{-22}
 \end{table}
 
 Entrambi i test rigettano nettamente $H_0$ ($p<0.001$):
-\textbf{eteroschedasticita' confermata}.
+\textbf{eteroschedasticità confermata}.
 
 \subsection{Rimedio 1: trasformazione logaritmica}
 Applicando $\ln(\texttt{charges})$ come variabile dipendente sugli stessi 4
@@ -494,9 +463,9 @@ smoker\_yes & 1.5427 & 0.030 & 50.69  & $<0.001$ \\
 \end{tabular}
 \end{table}
 
-I coefficienti si interpretano come semi-elasticita': $\exp(\hat\beta_j)-1$
+I coefficienti si interpretano come semi-elasticità: $\exp(\hat\beta_j)-1$
 e' la variazione percentuale attesa di \texttt{charges} per un incremento
-unitario di $x_j$. Ad esempio, essere fumatori e' associato a
+unitario di $x_j$. Ad esempio, essere fumatori è associato a
 $(\exp(1.5427)-1)\times100\approx368\%$ di spesa in piu', a parita' di
 eta'/BMI/figli.
 
@@ -504,7 +473,7 @@ Ripetendo i test sui residui di questo modello (Tabella~\ref{tab:bp_white_log}):
 
 \begin{table}[H]
 \centering
-\caption{Test di eteroschedasticita' sul modello log-lin}
+\caption{Test di eteroschedasticità sul modello log-lin}
 \label{tab:bp_white_log}
 \begin{tabular}{lrrrr}
 \toprule
@@ -516,14 +485,14 @@ White         & LM$=140.86$ & $1.41\times10^{-23}$ & 11.99 & $5.47\times10^{-25}
 \end{tabular}
 \end{table}
 
-L'eteroschedasticita' \textbf{persiste} (anzi il test di White peggiora
+L'eteroschedasticitaà \textbf{persiste} (anzi il test di White peggiora
 leggermente). Il grafico Residui-vs-Fitted in scala logaritmica
 (Figura~\ref{fig:loglin_resid}, pannello destro) mostra un pattern a "V"
-ancora piu' marcato che nel lin-lin: la trasformazione logaritmica da sola
-non risolve il problema, poiche' la causa non e' (solo) una relazione
+ancora più marcato che nel lin-lin: la trasformazione logaritmica da sola
+non risolve il problema, poichè la causa non è (solo) una relazione
 moltiplicativa media-varianza ma una interazione strutturale
 \texttt{smoker}$\times$\texttt{bmi}/\texttt{age} assente da entrambe le
-specificazioni additive.
+specificazioni.
 
 \begin{figure}[H]
 \centering
@@ -533,45 +502,7 @@ log-lin (destra).}
 \label{fig:loglin_resid}
 \end{figure}
 
-\subsection{Rimedio 2: errori standard robusti (HC)}
-In presenza di eteroschedasticita' lo stimatore OLS $\hat{\boldsymbol\beta}$
-resta non distorto e consistente (BLUE decade solo l'efficienza), ma la
-formula classica della varianza $\widehat{\mathrm{Var}}(\hat{\boldsymbol\beta})=\hat\sigma^2(X'X)^{-1}$
-non e' piu' valida. Si adotta lo stimatore \emph{sandwich}
-Heteroskedasticity-Consistent (HC) di White:
-\begin{equation}
-\widehat{\mathrm{Var}}_{HC}(\hat{\boldsymbol\beta}) = (X'X)^{-1}\Big(\sum_i \hat u_i^2 x_i x_i'\Big)(X'X)^{-1}
-\end{equation}
-con varianti HC0/HC1/HC3 che differiscono per il fattore di correzione dei
-gradi di liberta' (HC3 e' generalmente il piu' conservativo e raccomandato
-in campioni medio-piccoli).
-
-\begin{table}[H]
-\centering
-\caption{Confronto standard error: OLS classico vs.\ HC}
-\label{tab:hc}
-\begin{tabular}{lrrrrr}
-\toprule
-Regressore & Coeff. & SE OLS & SE HC0 & SE HC3 & $\Delta\%$ HC3 \\
-\midrule
-costante    & $-12\,098.82$ & 942.63 & 986.19 & 991.94 & $+5.2\%$ \\
-age         & 257.77        & 11.91  & 11.82  & 11.88  & $-0.3\%$ \\
-bmi         & 321.87        & 27.39  & 29.89  & 30.08  & $+9.8\%$ \\
-children    & 472.98        & 137.88 & 130.51 & 131.27 & $-4.8\%$ \\
-smoker\_yes & 23\,810.40     & 411.41 & 570.54 & 573.84 & $+39.5\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-I coefficienti restano \textbf{identici}; cambiano solo gli standard error
-(e di conseguenza $t$, $p$-value, IC). Lo SE di \texttt{smoker\_yes} si
-allarga del 39.5\%, coerentemente con la maggiore dispersione dei residui
-nel sottogruppo fumatori osservata in Figura~\ref{fig:resid_fitted}: la
-stima "classica" sottostimava l'incertezza su questo coefficiente. Tutti i
-regressori restano comunque altamente significativi anche con errori
-robusti HC3.
-
-\subsection{Rimedio 3: Modello Lineare Robusto (RLM)}
+\subsection{Rimedio 2: Modello Lineare Robusto (RLM)}
 Il Modello Lineare Robusto stima $\hat{\boldsymbol\beta}$ minimizzando una
 funzione di perdita meno sensibile agli outlier rispetto alla somma dei
 quadrati. Con la norma di Huber:
@@ -615,14 +546,12 @@ non modellata esplicitamente.
 \label{fig:rlm_weights}
 \end{figure}
 
-\subsection{Sintesi Step 3}
-L'eteroschedasticita' e' confermata formalmente sia in lin-lin sia in
-log-lin: la trasformazione logaritmica da sola non basta, poiche' la causa
-e' strutturale (interazione mancante) piu' che di scala. Gli \textbf{errori
-standard HC3} rappresentano il rimedio minimale per un'inferenza valida
-senza cambiare la specificazione, mentre l'\textbf{RLM} rivela quanto gli
+\subsection{Sintesi}
+L'eteroschedasticità è confermata formalmente sia in lin-lin sia in
+log-lin: la trasformazione logaritmica da sola non basta, poichè la causa
+è strutturale (interazione mancante) piu' che di scala.L'\textbf{RLM} rivela quanto gli
 outlier distorcano i coefficienti OLS di \texttt{bmi} e
-\texttt{smoker\_yes} -- utile complemento diagnostico, pur non risolvendo
+\texttt{smoker\_yes}, utile complemento diagnostico, pur non risolvendo
 di per se' l'eteroschedasticita' (e' un rimedio per la non-robustezza agli
 outlier, non per la eteroschedasticita' in senso stretto).
 
