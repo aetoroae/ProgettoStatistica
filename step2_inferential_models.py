@@ -16,9 +16,7 @@ pd.set_option("display.width", 140)
 pd.set_option("display.max_columns", 20)
 OUT = "output"
 
-# -----------------------------------------------------------------------
-# 0. CARICAMENTO E PRE-PROCESSING (coerente con lo Step 1)
-# -----------------------------------------------------------------------
+#CARICAMENTO E PRE-PROCESSING
 df = pd.read_csv("insurance.csv").drop_duplicates().reset_index(drop=True)
 df_enc = pd.get_dummies(df, columns=["sex", "smoker", "region"], drop_first=True, dtype=int)
 
@@ -34,15 +32,14 @@ X_full = sm.add_constant(X_level)
 model_full = sm.OLS(y_level, X_full).fit()
 print(model_full.summary())
 
-# -----------------------------------------------------------------------
-# 1. CONFRONTO FORME FUNZIONALI: lin-lin, log-log, log-lin, lin-log
-# -----------------------------------------------------------------------
-# NOTA METODOLOGICA:
-#  - 'children' e' un conteggio con valori pari a 0 e le dummy sono 0/1:
-#    il logaritmo non e' definito/e' privo di senso economico per queste
-#    variabili, quindi in tutte le specificazioni "log" restano in livelli.
-#  - Solo age e bmi (sempre > 0) vengono log-trasformate quando richiesto
-#    dalla forma funzionale.
+
+#CONFRONTO FORME FUNZIONALI: lin-lin, log-log, log-lin, lin-log
+#NOTA METODOLOGICA:
+#  -'children' e' un conteggio con valori pari a 0 e le dummy sono 0/1:
+#   il logaritmo non e' definito/e' privo di senso per queste
+#   variabili, quindi in tutte le specificazioni "log" restano in livelli.
+#  -Solo age e bmi (sempre > 0) vengono log-trasformate quando richiesto
+#   dalla forma funzionale.
 df_log = df_enc.copy()
 df_log["log_charges"] = np.log(df_enc["charges"])
 df_log["log_age"] = np.log(df_enc["age"])
@@ -167,7 +164,7 @@ print(f"\n-> Forma funzionale scelta per lo Step 2: '{best_form}' "
       "(parsimonia + miglior fit nel proprio gruppo + residui meno asimmetrici; "
       "l'eventuale log(Y) come rimedio e' demandata al test formale di eteroschedasticita' dello Step 3)")
 
-# Grafico comparativo
+#Grafico comparativo
 fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
 comparison["R2 (scala $, ritrasformato)"].plot(kind="bar", ax=axes[0], color="#4C72B0")
 axes[0].set_title("R2 ritrasformato in scala $ per forma funzionale")
@@ -182,9 +179,7 @@ plt.savefig(f"{OUT}/06_functional_forms_comparison.png", dpi=150)
 plt.close()
 print(f"[Figura salvata] {OUT}/06_functional_forms_comparison.png")
 
-# -----------------------------------------------------------------------
-# 2. SELEZIONE DEL MODELLO MIGLIORE SULLA FORMA FUNZIONALE VINCENTE
-# -----------------------------------------------------------------------
+#SELEZIONE DEL MODELLO MIGLIORE SULLA FORMA FUNZIONALE VINCENTE
 best_spec = specs[best_form]
 y_best_name, X_best_full = best_spec["y"], best_spec["X"]
 y_best = df_log[y_best_name]
@@ -195,7 +190,7 @@ print("=" * 78)
 res_start = sm.OLS(y_best, sm.add_constant(df_log[X_best_full])).fit()
 print(res_start.summary())
 
-# --- (a) Backward elimination per significativita' (p-value > 0.05) ---
+#Backward elimination per significativita' (p-value > 0.05)
 print("\n" + "-" * 78)
 print("2.3a BACKWARD ELIMINATION (soglia p-value = 0.05)")
 print("-" * 78)
@@ -216,7 +211,7 @@ model_backward = res
 vars_backward = cur_vars
 print(f"\nRegressori finali (backward elimination): {vars_backward}")
 
-# --- (b) Best Subset Selection (criterio BIC, ricerca esaustiva) ---
+# Best Subset Selection (criterio BIC, ricerca esaustiva)
 print("\n" + "-" * 78)
 print("2.3b BEST SUBSET SELECTION (ricerca esaustiva, criterio BIC)")
 print("-" * 78)
@@ -258,13 +253,11 @@ print(f"Best subset (BIC)    -> {sorted(vars_subset_bic)}")
 agree = set(vars_backward) == set(vars_subset_bic)
 print(f"I due criteri concordano: {agree}")
 
-# Il modello finale e' quello indicato dal criterio BIC (piu' rigoroso,
-# penalizza maggiormente la complessita' e riduce il rischio di overfitting)
+#Il modello finale e' quello indicato dal criterio BIC (piu' rigoroso,
+#penalizza maggiormente la complessita' e riduce il rischio di overfitting)
 FINAL_VARS = vars_subset_bic if not agree else vars_backward
 
-# -----------------------------------------------------------------------
-# 3. MODELLO FINALE: ANALISI DELL'OUTPUT
-# -----------------------------------------------------------------------
+#MODELLO FINALE: ANALISI DELL'OUTPUT
 print("\n" + "=" * 78)
 print(f"2.4 MODELLO FINALE  ({best_form}, regressori selezionati)")
 print("=" * 78)
@@ -303,9 +296,7 @@ if y_best_name == "log_charges":
             pct = (np.exp(b) - 1) * 100
             print(f"  {v:20s}: passare da 0 a 1 -> charges varia del {pct:+.2f}%")
 
-# -----------------------------------------------------------------------
-# 4. MULTICOLLINEARITA': VIF E CONDITION NUMBER
-# -----------------------------------------------------------------------
+#MULTICOLLINEARITA': VIF E CONDITION NUMBER
 print("\n" + "=" * 78)
 print("2.5 MULTICOLLINEARITA': VIF e CONDITION NUMBER")
 print("=" * 78)
@@ -320,10 +311,10 @@ Regola pratica: VIF < 5 assenza di problemi; 5 <= VIF < 10 attenzione;
 VIF >= 10 forte multicollinearita'. Il VIF della costante non e' interpretabile.
 """)
 
-# Condition number "k" alla Belsley-Kuh-Welsch: le colonne di X (inclusa
-# la costante) sono scalate a norma unitaria (NON centrate, per non
-# mascherare eventuale collinearita' che coinvolge l'intercetta), poi
-# si calcola il rapporto tra massimo e minimo valore singolare.
+#Condition number "k" alla Belsley-Kuh-Welsch: le colonne di X (inclusa
+#la costante) sono scalate a norma unitaria (NON centrate, per non
+#mascherare eventuale collinearita' che coinvolge l'intercetta), poi
+#si calcola il rapporto tra massimo e minimo valore singolare.
 X_arr = X_final.values.astype(float)
 col_norms = np.linalg.norm(X_arr, axis=0)
 X_scaled = X_arr / col_norms
@@ -338,9 +329,7 @@ Regola pratica: k < 10  -> nessun problema
                 k >= 30 -> multicollinearita' severa
 """)
 
-# -----------------------------------------------------------------------
-# 5. SALVATAGGIO OGGETTI PER GLI STEP SUCCESSIVI
-# -----------------------------------------------------------------------
+#SALVATAGGIO OGGETTI PER GLI STEP SUCCESSIVI
 import pickle
 with open(f"{OUT}/step2_final_model.pkl", "wb") as f:
     pickle.dump({

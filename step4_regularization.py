@@ -21,9 +21,7 @@ pd.set_option("display.width", 140)
 OUT = "output"
 RNG = 42
 
-# -----------------------------------------------------------------------
-# 0. CARICAMENTO, ENCODING, TRAIN/TEST SPLIT
-# -----------------------------------------------------------------------
+#CARICAMENTO, ENCODING, TRAIN/TEST SPLIT
 df = pd.read_csv("insurance.csv").drop_duplicates().reset_index(drop=True)
 df_enc = pd.get_dummies(df, columns=["sex", "smoker", "region"], drop_first=True, dtype=int)
 
@@ -53,9 +51,7 @@ X_test_s[CONTINUOUS] = scaler.transform(X_test[CONTINUOUS])
 print("\nMedia/Std dei regressori continui dopo standardizzazione (train):")
 print(X_train_s[CONTINUOUS].agg(["mean", "std"]).round(3))
 
-# -----------------------------------------------------------------------
-# 1. GRIGLIA LOGARITMICA DECRESCENTE PER LAMBDA
-# -----------------------------------------------------------------------
+#GRIGLIA LOGARITMICA DECRESCENTE PER LAMBDA
 alphas = np.logspace(4, -4, 100)  # da 10^4 a 10^-4, decrescente
 print(f"\nGriglia lambda: {len(alphas)} valori, da {alphas[0]:.1e} a {alphas[-1]:.1e}")
 
@@ -136,9 +132,7 @@ for name, spec in MODELS.items():
     print("  Coefficienti (lambda.min):")
     print("   " + coef_series.round(2).to_string().replace("\n", "\n   "))
 
-# -----------------------------------------------------------------------
-# 2. CONFRONTO CON OLS (baseline, lambda->0)
-# -----------------------------------------------------------------------
+#CONFRONTO CON OLS (baseline, lambda->0)
 from sklearn.linear_model import LinearRegression
 ols = LinearRegression().fit(X_train_s, y_train)
 ols_test_mse = mean_squared_error(y_test, ols.predict(X_test_s))
@@ -150,9 +144,7 @@ print(f"Test MSE = {ols_test_mse:,.1f}   Test RMSE = {np.sqrt(ols_test_mse):,.0f
 print("Coefficienti OLS:")
 print(pd.Series(ols.coef_, index=ALL_VARS).round(2).to_string())
 
-# -----------------------------------------------------------------------
-# 3. TRACE PLOT DEI COEFFICIENTI
-# -----------------------------------------------------------------------
+#TRACE PLOT DEI COEFFICIENTI
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 palette = sns.color_palette("tab10", n_colors=len(ALL_VARS))
 
@@ -174,9 +166,7 @@ plt.savefig(f"{OUT}/11_trace_plots.png", dpi=150, bbox_inches="tight")
 plt.close()
 print(f"\n[Figura salvata] {OUT}/11_trace_plots.png")
 
-# -----------------------------------------------------------------------
-# 4. CV MSE vs -log(lambda)
-# -----------------------------------------------------------------------
+#CV MSE vs -log(lambda)
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 for ax, (name, res) in zip(axes.flat, results.items()):
     neg_log_lambda = -np.log10(res["alphas"])
@@ -195,9 +185,7 @@ plt.savefig(f"{OUT}/12_cv_mse_vs_loglambda.png", dpi=150)
 plt.close()
 print(f"[Figura salvata] {OUT}/12_cv_mse_vs_loglambda.png")
 
-# -----------------------------------------------------------------------
-# 5. TABELLA RIASSUNTIVA E CONFRONTO COEFFICIENTI
-# -----------------------------------------------------------------------
+#TABELLA RIASSUNTIVA E CONFRONTO COEFFICIENTI
 print("\n" + "=" * 78)
 print("4.3 TABELLA RIASSUNTIVA DEI MODELLI")
 print("=" * 78)
@@ -231,15 +219,13 @@ coef_table = pd.DataFrame({name: pd.Series(res["best_est"].coef_, index=ALL_VARS
 coef_table["OLS"] = pd.Series(ols.coef_, index=ALL_VARS)
 print(coef_table.round(2).to_string())
 
-# Variabili azzerate (o quasi) da LASSO / Elastic Net a lambda.min
+#Variabili azzerate (o quasi) da LASSO / Elastic Net a lambda.min
 print("\nVariabili azzerate a lambda.min (|coef| < 1):")
 for name in ["LASSO", "ElasticNet a=0.1", "ElasticNet a=0.9"]:
     zeroed = coef_table.index[coef_table[name].abs() < 1].tolist()
     print(f"  {name}: {zeroed if zeroed else 'nessuna'}")
 
-# -----------------------------------------------------------------------
-# 6. GRAFICO RIASSUNTIVO: TEST MSE PER MODELLO
-# -----------------------------------------------------------------------
+#GRAFICO RIASSUNTIVO: TEST MSE PER MODELLO
 fig, ax = plt.subplots(figsize=(8, 5))
 summary_df["Test RMSE"].plot(kind="bar", ax=ax, color="#4C72B0")
 ax.set_ylabel("Test RMSE ($)")

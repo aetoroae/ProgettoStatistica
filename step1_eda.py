@@ -15,9 +15,7 @@ pd.set_option("display.max_columns", 20)
 
 OUT = "output"
 
-# -----------------------------------------------------------------------
-# 1. CARICAMENTO E ISPEZIONE DEI DATI
-# -----------------------------------------------------------------------
+#CARICAMENTO E ISPEZIONE DEI DATI
 df = pd.read_csv("insurance.csv")
 
 print("=" * 70)
@@ -36,11 +34,6 @@ print(df.isnull().sum().to_string())
 n_dup = df.duplicated().sum()
 print(f"\nRighe duplicate: {n_dup}")
 if n_dup > 0:
-    # In questo dataset è nota la presenza di 1 riga duplicata (age=19,
-    # sex=male, bmi=30.59, children=0, smoker=no, region=northwest).
-    # Non essendoci un ID paziente, non si può escludere che sia un
-    # soggetto realmente ripetuto; la rimuoviamo per evitare di pesare
-    # due volte la stessa osservazione nella stima OLS.
     df = df.drop_duplicates().reset_index(drop=True)
     print(f"-> Rimosse. Nuove dimensioni: {df.shape[0]} osservazioni")
 
@@ -66,9 +59,7 @@ kurt = df["charges"].kurt()
 print(f"Skewness : {skew:.3f}  (>0 => coda a destra / asimmetria positiva)")
 print(f"Kurtosis : {kurt:.3f}  (in eccesso rispetto alla normale, che ha 0)")
 
-# -----------------------------------------------------------------------
-# 2. DISTRIBUZIONE DELLA VARIABILE TARGET: charges
-# -----------------------------------------------------------------------
+#DISTRIBUZIONE DELLA VARIABILE TARGET: charges
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
 sns.histplot(df["charges"], bins=40, kde=True, ax=axes[0], color="#4C72B0")
@@ -87,7 +78,7 @@ plt.savefig(f"{OUT}/01_charges_distribution.png", dpi=150)
 plt.close()
 print(f"\n[Figura salvata] {OUT}/01_charges_distribution.png")
 
-# Distribuzione di charges per fattori chiave (utile a orientare lo Step 2)
+#Distribuzione di charges per fattori chiave (utile a orientare lo Step 2)
 fig, axes = plt.subplots(1, 3, figsize=(16, 5))
 sns.boxplot(data=df, x="smoker", y="charges", hue="smoker", ax=axes[0], palette="Set2", legend=False)
 axes[0].set_title("charges per stato di fumatore")
@@ -100,12 +91,10 @@ plt.savefig(f"{OUT}/02_charges_by_factors.png", dpi=150)
 plt.close()
 print(f"[Figura salvata] {OUT}/02_charges_by_factors.png")
 
-# -----------------------------------------------------------------------
-# 3. CODIFICA DELLE VARIABILI CATEGORICHE (dummy, evitando dummy trap)
-# -----------------------------------------------------------------------
-# sex: 2 categorie -> 1 dummy (baseline = female)
-# smoker: 2 categorie -> 1 dummy (baseline = no)
-# region: 4 categorie -> 3 dummy (baseline = northeast, prima in ordine alfabetico)
+#CODIFICA DELLE VARIABILI CATEGORICHE (dummy, evitando dummy trap)
+#sex: 2 categorie -> 1 dummy (baseline = female)
+#smoker: 2 categorie -> 1 dummy (baseline = no)
+#region: 4 categorie -> 3 dummy (baseline = northeast, prima in ordine alfabetico)
 df_enc = pd.get_dummies(
     df,
     columns=["sex", "smoker", "region"],
@@ -128,9 +117,7 @@ print(df_enc.head())
 df_enc.to_csv(f"{OUT}/insurance_encoded.csv", index=False)
 print(f"\n[Dataset codificato salvato] {OUT}/insurance_encoded.csv")
 
-# -----------------------------------------------------------------------
-# 4. MATRICE DI CORRELAZIONE
-# -----------------------------------------------------------------------
+#MATRICE DI CORRELAZIONE
 corr = df_enc.corr(numeric_only=True)
 
 print("\n" + "=" * 70)
@@ -153,10 +140,7 @@ plt.savefig(f"{OUT}/03_correlation_heatmap.png", dpi=150)
 plt.close()
 print(f"\n[Figura salvata] {OUT}/03_correlation_heatmap.png")
 
-# -----------------------------------------------------------------------
-# 5. SCATTERPLOT MATRIX (con rette di regressione)
-# -----------------------------------------------------------------------
-# Variabili numeriche continue/discrete + target: age, bmi, children, charges
+#SCATTERPLOT MATRIX
 num_vars = ["age", "bmi", "children", "charges"]
 g = sns.pairplot(
     df[num_vars],
@@ -170,7 +154,7 @@ g.savefig(f"{OUT}/04_scatterplot_matrix.png", dpi=150)
 plt.close()
 print(f"[Figura salvata] {OUT}/04_scatterplot_matrix.png")
 
-# Versione arricchita: colorata per smoker, per evidenziare l'interazione
+#Versione arricchita: colorata per smoker, per evidenziare l'interazione
 g2 = sns.pairplot(
     df[num_vars + ["smoker"]],
     hue="smoker",

@@ -1,8 +1,6 @@
 \documentclass[11pt,a4paper]{article}
 
-% ---------------------------------------------------------------------
-% PACCHETTI
-% ---------------------------------------------------------------------
+% Pacchetti
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[italian]{babel}
@@ -18,7 +16,7 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
 
-\title{DataMedical Cost Personal Datasets (\texttt{insurance.csv})}
+\title{DataMedical Cost Personal Datasets}
 \author{Cristian Trofusha, Samuele Epiceno, Giuseppe Antonio Arcuri, Miriam Formaro}
 \date{\today}
 
@@ -40,10 +38,10 @@ Per ciascun individuo sono disponibili $7$ variabili:
 \begin{itemize}[nosep]
     \item \textbf{charges} (variabile target, continua): spesa medica annua
     addebitata dall'assicurazione, in USD;
-    \item \textbf{age} (continua): età dell'assicurato, 18--64 anni;
+    \item \textbf{age} (continua): età dell'assicurato, da 18 a 64 anni;
     \item \textbf{sex} (categorica): \texttt{male} / \texttt{female};
     \item \textbf{bmi} (continua): indice di massa corporea ($\mathrm{kg/m^2}$);
-    \item \textbf{children} (discreta): numero di figli a carico coperti dalla polizza, 0--5;
+    \item \textbf{children} (discreta): numero di figli a carico coperti dalla polizza, da 0 a 5;
     \item \textbf{smoker} (categorica): \texttt{yes} / \texttt{no};
     \item \textbf{region} (categorica): area residenziale USA (\texttt{northeast},
     \texttt{northwest}, \texttt{southeast}, \texttt{southwest}).
@@ -60,8 +58,8 @@ L'analisi persegue tre obiettivi complementari:
     \item \textbf{Inferenziale}: stimare un modello di regressione lineare che
     identifichi i regressori statisticamente significativi della spesa
     sanitaria, valutandone la forma funzionale ottimale, la significatività
-    congiunta e individuale dei regressori, e gestire l'eventuale presenza di multicollinearita'
-    ed eteroschedasticita';
+    congiunta e individuale dei regressori, e gestire l'eventuale presenza di multicollinearità
+    ed eteroschedasticità;
     \item \textbf{Predittivo}: confrontare tecniche di regolarizzazione
     (Ridge, LASSO, Elastic Net) con l'OLS classico in termini di errore di
     previsione fuori campione, valutandone la capacità di selezione automatica
@@ -71,11 +69,9 @@ L'analisi persegue tre obiettivi complementari:
 \subsection{Risultati attesi}
 Sulla base della letteratura relativa a questo dataset e dell'evidenza
 grafica preliminare, ci si attende che lo stato di fumatore (\texttt{smoker})
-sia il principale determinante della spesa, seguito da eta' e BMI, con un
+sia il principale determinante della spesa, seguito da età e BMI, con un
 effetto marginale del numero di figli; le variabili \texttt{sex} e
-\texttt{region} sono attese come non (o debolmente) significative. Data la
-forte asimmetria di \texttt{charges}, si ipotizza inoltre la presenza
-di eteroschedasticità nei residui del modello in livelli.
+\texttt{region} sono attese come non (o debolmente) significative.
 
 % =======================================================================
 \section{Descrizione del dataset e Analisi Preliminare}
@@ -105,28 +101,28 @@ Le variabili categoriche mostrano le seguenti frequenze: \texttt{sex}
 sostanzialmente bilanciato (50.5\% \emph{male}, 49.5\% \emph{female});
 \texttt{smoker} fortemente sbilanciato (79.5\% \emph{no}, 20.5\% \emph{yes},
 coerente con la prevalenza reale del fumo); \texttt{region}
-pressochè equidistribuita (southeast 27.2\%, le altre tre $\approx$24\%
+pressoché equidistribuita (southeast 27.2\%, le altre tre $\approx$24\%
 ciascuna).
 
 \subsection{Codifica delle variabili categoriche}
 Le variabili categoriche sono state trasformate in variabili dummy (0/1)
 mediante \emph{one-hot encoding}, escludendo la prima categoria in ordine
 alfabetico per ciascuna variabile (\texttt{drop\_first=True}) al fine di
-evitare la \emph{dummy variable trap}, ossia la collinearita' perfetta che si
+evitare la \emph{dummy variable trap}, ossia la collinearità perfetta che si
 avrebbe includendo tutte le categorie insieme all'intercetta:
-Le categorie di riferimento (baseline, corrispondenti a coefficiente nullo
+Le categorie di riferimento (corrispondenti a coefficiente nullo
 per costruzione) sono: \texttt{sex}=\emph{female}, \texttt{smoker}=\emph{no},
-\texttt{region}=\emph{northeast}. Si ottengono cosi' 8 regressori:
+\texttt{region}=\emph{northeast}. Si ottengono così 8 regressori:
 \texttt{age}, \texttt{bmi}, \texttt{children}, \texttt{sex\_male},
 \texttt{smoker\_yes}, \texttt{region\_northwest}, \texttt{region\_southeast},
 \texttt{region\_southwest}.
 
 \subsection{Distribuzione della variabile target}
 La Figura~\ref{fig:dist_charges} mostra istogramma e densità di
-\texttt{charges} in livelli e in logaritmo. La distribuzione in livelli e'
+\texttt{charges} in livelli e in logaritmo. La distribuzione in livelli è
 fortemente asimmetrica: skewness $=1.52$, curtosi$=1.60$ (rispetto a 0 della normale), con media (\$13\,279) nettamente
 superiore alla mediana (\$9\,386). La forma è inoltre chiaramente
-\textbf{bimodale}, con un secondo addensamento intorno a \$35\,000--45\,000.
+\textbf{bimodale}, con un secondo addensamento intorno a valori compresi tra \$35\,000 e \$45\,000.
 La trasformazione logaritmica riduce l'asimmetria ma non elimina del tutto
 la bimodalità residua.
 
@@ -173,9 +169,9 @@ Sezione~\ref{sec:multicollinearita}.
 \subsection{Matrice di dispersione}
 La Figura~\ref{fig:scatter} mostra la scatterplot matrix delle variabili
 numeriche con rette di regressione costruite tramite OLS. La relazione
-\texttt{age}--\texttt{charges} appare quasi lineare "a strati" (dovuta ai
-sottogruppi \texttt{smoker}); \texttt{bmi}--\texttt{charges} è positiva ma
-più rumorosa; \texttt{children}--\texttt{charges} è pressochè piatta.
+la relazione tra \texttt{age} e \texttt{charges} appare quasi lineare "a strati" (dovuta ai
+sottogruppi \texttt{smoker}); quella tra \texttt{bmi} e \texttt{charges} è positiva ma
+più rumorosa; quella tra \texttt{children} e \texttt{charges} è pressoché piatta.
 
 \begin{figure}[H]
 \centering
@@ -186,7 +182,7 @@ regressione.}
 \end{figure}
 
 % =======================================================================
-\section{Modelli Inferenziali, Forme Funzionali e Multicollinearita'}
+\section{Modelli Inferenziali, Forme Funzionali e Multicollinearità}
 % =======================================================================
 
 \subsection{Il modello di regressione lineare multipla}
@@ -242,7 +238,7 @@ lin-log:
 \text{lin-log:} \quad & y = \beta_0 + \beta_1\ln(\texttt{age}) + \beta_2\ln(\texttt{bmi}) + \boldsymbol{\gamma}'\mathbf{z} + u
 \end{align}
 dove $\mathbf{z}$ raccoglie \texttt{children} e le dummy (che restano sempre
-in livelli, poichè il logaritmo non è definito per \texttt{children}=0 e
+in livelli, poiché il logaritmo non è definito per \texttt{children}=0 e
 privo di senso per variabili binarie).
 
 \begin{table}[H]
@@ -261,25 +257,18 @@ lin-log & charges       & 0.744 & 0.743 & 27\,127.8 & 1.18 & 5.45 \\
 \end{tabular}
 \end{table}
 
-\subsection{Selezione del modello: eliminazione dei regressori non significativi e Best Subset Selection}
-Sono state applicate due procedure indipendenti sulla forma lin-lin:
-\begin{enumerate}[nosep]
-    \item \textbf{Backward elimination}: rimozione iterativa del regressore
-    con $p$-value piu' alto finche' tutti i rimanenti risultano significativi
-    a $\alpha=0.05$. Sequenza di rimozione: \texttt{sex\_male} ($p=0.698$)
-    $\to$ \texttt{region\_northwest} ($p=0.465$) $\to$
-    \texttt{region\_southwest} ($p=0.058$) $\to$ \texttt{region\_southeast}
-    ($p=0.136$).
-    \item \textbf{Best Subset Selection}: ricerca esaustiva su tutte le
-    $2^8-1=255$ combinazioni non vuote di regressori (Ciò è possibile visto il basso numero di regressori)s, minimizzando il
-    criterio BIC
-    \begin{equation}
-    \mathrm{BIC} = n\ln(\mathrm{SSE}/n) + k\ln(n)
-    \end{equation}
-    che penalizza la complessita' piu' severamente dell'AIC ed e' quindi
-    preferibile quando l'obiettivo e' un modello parsimonioso.
-\end{enumerate}
-Entrambe le procedure convergono \textbf{sullo stesso modello finale}:
+\subsection{Selezione del modello: Best Subset Selection}
+La scelta del modello finale è stata effettuata tramite \textbf{Best
+Subset Selection}: una ricerca esaustiva su tutte le $2^8-1=255$
+combinazioni non vuote di regressori (praticabile grazie al basso numero
+di regressori disponibili), selezionando il sottoinsieme che minimizza il
+criterio BIC
+\begin{equation}
+\mathrm{BIC} = n\ln(\mathrm{SSE}/n) + k\ln(n)
+\end{equation}
+che penalizza la complessità più severamente dell'AIC ed è quindi
+preferibile quando l'obiettivo è un modello parsimonioso. La procedura
+individua come modello ottimale:
 \begin{equation}
 \texttt{charges}_i = \beta_0 + \beta_1\,\texttt{age}_i + \beta_2\,\texttt{bmi}_i
 + \beta_3\,\texttt{children}_i + \beta_4\,\texttt{smoker\_yes}_i + u_i
@@ -311,7 +300,7 @@ smoker\_yes & 23\,810.40 & 411.41 & 57.87 & $<0.001$ & $[23\,003,\,24\,617]$ \\
 \end{tabular}
 \end{table}
 
-\textbf{Bontà di adattamento:} $R^2=0.750$, $R^2_{adj}=0.749$ -- il modello
+\textbf{Bontà di adattamento:} $R^2=0.750$, $R^2_{adj}=0.749$: il modello
 spiega il 75\% della varianza di \texttt{charges}, valore praticamente
 identico a quello del modello completo (0.751), a conferma che le variabili
 escluse non aggiungono potere esplicativo.
@@ -325,20 +314,20 @@ suo complesso è significativo.
 
 \textbf{Test $t$ sui singoli coefficienti} ($H_0:\beta_j=0$ vs.\
 $H_1:\beta_j\neq0$, statistica $t=\hat\beta_j/\mathrm{SE}(\hat\beta_j)$):
-tutti e 4 i regressori sono significativi a livello 0.1\%. Interpretazione
-economica: a parita' delle altre covariate, un anno di eta' in piu' e'
-associato a $+\$258$ di spesa attesa; un punto di BMI in piu' a $+\$322$;
-un figlio in piu' a $+\$473$; essere fumatori a $+\$23\,810$ -- effetto di
+tutti e 4 i regressori sono significativi. Interpretazione
+del modello, fissati gli altri regressori, un anno di età in più è
+associato a $+\$258$ di spesa attesa; un punto di BMI in più a $+\$322$;
+un figlio in più a $+\$473$; essere fumatori a $+\$23\,810$, effetto di
 gran lunga dominante, coerente con la correlazione $\rho=0.787$ osservata
 in Sez.~2.
 
-\subsection{Multicollinearita'}
+\subsection{Multicollinearità}
 \label{sec:multicollinearita}
-Il \textbf{Variance Inflation Factor} per il regressore $j$ e' definito come
+Il \textbf{Variance Inflation Factor} per il regressore $j$ è definito come
 \begin{equation}
 \mathrm{VIF}_j = \frac{1}{1-R_j^2}
 \end{equation}
-dove $R_j^2$ e' il coefficiente di determinazione della regressione di
+dove $R_j^2$ è il coefficiente di determinazione della regressione di
 $x_j$ su tutti gli altri regressori. La Tabella~\ref{tab:vif} riporta i VIF
 del modello finale.
 
@@ -362,28 +351,26 @@ Tutti i VIF sono prossimi a 1 (soglia di allarme convenzionale:
 $\mathrm{VIF}\geq10$): nessuna
 multicollinearità rilevante tra i regressori.
 
-Come indicatore complementare e' stato calcolato il \textbf{Condition
-Number} $k$ secondo il metodo di Belsley--Kuh--Welsch: le colonne della
-matrice disegno $X$ (inclusa la costante) sono scalate a norma unitaria
-(senza centrare, per non mascherare collinearita' che coinvolge
-l'intercetta), quindi
+Come indicatore complementare è stato calcolato il \textbf{Condition
+Number} $k$ della matrice disegno $X$ (inclusa la costante), definito
+semplicemente come la radice quadrata del rapporto tra l'autovalore
+massimo e l'autovalore minimo della matrice $X'X$:
 \begin{equation}
-k = \sqrt{\frac{\lambda_{max}}{\lambda_{min}}} = \frac{\sigma_{max}(X_{scaled})}{\sigma_{min}(X_{scaled})}
+k = \sqrt{\frac{\lambda_{max}(X'X)}{\lambda_{min}(X'X)}}
 \end{equation}
-dove $\sigma_{max}, \sigma_{min}$ sono il massimo e il minimo valore
-singolare. Si ottiene $k=14.16$ (soglie di riferimento: $k<10$ nessun
-problema, $10\leq k<30$ moderato, $k\geq30$ severo), un valore di
-multicollinearita' \emph{moderata} secondo la regola pratica, ma coerente
-con i VIF$\approx1$: l'inflazione residua e' dovuta principalmente alla
-diversa scala delle variabili (age/bmi in decine vs.\ dummy 0/1) piu' che a
-vera collinearita'. Il condition number "grezzo" restituito da
-\texttt{statsmodels} sulla matrice non scalata ($291.6$) e' fuorviante per
-lo stesso motivo ed e' riportato solo come controllo incrociato.
-\textbf{Conclusione}: nessun problema di multicollinearita' nel modello
-finale.
+Si ottiene $k=291.6$ (soglie di riferimento: $k<10$ nessun problema,
+$10\leq k<30$ moderato, $k\geq30$ severo). Il valore elevato è in larga
+parte attribuibile alla diversa scala di misura dei regressori (age e bmi
+assumono valori nell'ordine delle decine, mentre le dummy sono 0/1),
+piuttosto che a una reale relazione lineare tra le variabili: coerentemente,
+tutti i VIF restano prossimi a 1. Poiché il VIF non risente della scala
+delle variabili, viene qui considerato l'indicatore più affidabile per la
+diagnosi di multicollinearità.
+\textbf{Conclusione}: nessun problema di multicollinearità rilevante nel
+modello finale.
 
 % =======================================================================
-\section{Eteroschedasticita' e Analisi dei Residui}
+\section{Eteroschedasticità e Analisi dei Residui}
 \label{sec:eteroschedasticita}
 % =======================================================================
 
@@ -393,9 +380,7 @@ La Figura~\ref{fig:resid_fitted} mostra i residui del modello finale
 fumatore. Si osservano due nubi nettamente separate, ciascuna con
 un pattern non lineare, sintomo di eteroschedasticità e
 di non linearità residua (verosimile interazione \texttt{smoker}
-$\times$ \texttt{bmi} non inclusa nel modello additivo). L'istogramma dei
-residui mostra una bimodalità residua rispetto alla densità normale
-sovrapposta.
+$\times$ \texttt{bmi}).
 
 \begin{figure}[H]
 \centering
@@ -406,7 +391,7 @@ istogramma dei residui con densità normale teorica sovrapposta.}
 \end{figure}
 
 Il Q-Q plot (Figura~\ref{fig:qqplot}) conferma code pesanti a destra e
-di discostamento dalla normalità'.
+di discostamento dalla normalità.
 
 \begin{figure}[H]
 \centering
@@ -417,17 +402,17 @@ di discostamento dalla normalità'.
 
 \subsection{Test di Breusch-Pagan e White}
 Il test di \textbf{Breusch-Pagan} verifica $H_0: \mathrm{Var}(u_i|X_i)=\sigma^2$
-(omoschedasticita') contro $H_1$: la varianza dipende linearmente dai
+(omoschedasticità) contro $H_1$: la varianza dipende linearmente dai
 regressori, tramite la regressione ausiliaria
 $\hat{u}_i^2 = \delta_0+\delta_1 x_{1i}+\dots+\delta_k x_{ki}+v_i$ e la
 statistica $\mathrm{LM}=nR^2_{aux}\sim\chi^2_k$. Il test di \textbf{White}
 generalizza includendo nella regressione ausiliaria anche quadrati e
 prodotti incrociati dei regressori, risultando robusto a forme di
-eteroschedasticita' non lineari.
+eteroschedasticità non lineari.
 
 \begin{table}[H]
 \centering
-\caption{Test di eteroschedasticita' sul modello finale (lin-lin)}
+\caption{Test di eteroschedasticità sul modello finale (lin-lin)}
 \label{tab:bp_white}
 \begin{tabular}{lrrrr}
 \toprule
@@ -464,10 +449,10 @@ smoker\_yes & 1.5427 & 0.030 & 50.69  & $<0.001$ \\
 \end{table}
 
 I coefficienti si interpretano come semi-elasticità: $\exp(\hat\beta_j)-1$
-e' la variazione percentuale attesa di \texttt{charges} per un incremento
+è la variazione percentuale attesa di \texttt{charges} per un incremento
 unitario di $x_j$. Ad esempio, essere fumatori è associato a
-$(\exp(1.5427)-1)\times100\approx368\%$ di spesa in piu', a parita' di
-eta'/BMI/figli.
+$(\exp(1.5427)-1)\times100\approx368\%$ di spesa in più, a parità di
+età/BMI/figli.
 
 Ripetendo i test sui residui di questo modello (Tabella~\ref{tab:bp_white_log}):
 
@@ -485,12 +470,9 @@ White         & LM$=140.86$ & $1.41\times10^{-23}$ & 11.99 & $5.47\times10^{-25}
 \end{tabular}
 \end{table}
 
-L'eteroschedasticitaà \textbf{persiste} (anzi il test di White peggiora
-leggermente). Il grafico Residui-vs-Fitted in scala logaritmica
-(Figura~\ref{fig:loglin_resid}, pannello destro) mostra un pattern a "V"
-ancora più marcato che nel lin-lin: la trasformazione logaritmica da sola
-non risolve il problema, poichè la causa non è (solo) una relazione
-moltiplicativa media-varianza ma una interazione strutturale
+L'eteroschedasticità \textbf{persiste} (anzi il test di White peggiora
+leggermente). La trasformazione logaritmica da sola
+non risolve il problema, poiché la causa non è un problema di scala, ma una interazione 
 \texttt{smoker}$\times$\texttt{bmi}/\texttt{age} assente da entrambe le
 specificazioni.
 
@@ -502,19 +484,169 @@ log-lin (destra).}
 \label{fig:loglin_resid}
 \end{figure}
 
-\subsection{Rimedio 2: Modello Lineare Robusto (RLM)}
-Il Modello Lineare Robusto stima $\hat{\boldsymbol\beta}$ minimizzando una
-funzione di perdita meno sensibile agli outlier rispetto alla somma dei
-quadrati. Con la norma di Huber:
+\subsection{Rimedio 2: inclusione del termine di interazione smoker $\times$ bmi}
+L'analisi esplorativa (Sezione 2) e il pattern osservato nei residui (Sezione
+4.1) suggeriscono che l'effetto di \texttt{bmi} su \texttt{charges} non sia
+lo stesso per fumatori e non fumatori. Si stima quindi un modello esteso che
+include il termine di interazione \texttt{smoker\_yes} $\times$ \texttt{bmi}:
 \begin{equation}
-\rho_{Huber}(u) = \begin{cases} \tfrac{1}{2}u^2 & |u|\leq c \\ c|u|-\tfrac{1}{2}c^2 & |u|>c \end{cases}
+\texttt{charges}_i = \beta_0 + \beta_1\,\texttt{age}_i + \beta_2\,\texttt{bmi}_i
++ \beta_3\,\texttt{children}_i + \beta_4\,\texttt{smoker\_yes}_i
++ \beta_5\,(\texttt{smoker\_yes}_i \times \texttt{bmi}_i) + u_i
+\label{eq:modello_interazione}
 \end{equation}
-stimato tramite \emph{Iteratively Reweighted Least Squares} (IRLS), che
-assegna un peso $w_i<1$ alle osservazioni con residuo elevato.
 
 \begin{table}[H]
 \centering
-\caption{Confronto coefficienti: OLS vs.\ RLM (Huber-T)}
+\caption{Modello con interazione smoker $\times$ bmi}
+\label{tab:interazione}
+\begin{tabular}{lrrrr}
+\toprule
+Regressore & Coeff. & Std.\,Err. & $t$ & $p$-value \\
+\midrule
+costante                        & $-2\,725.78$  & 831.78  & $-3.28$ & 0.001 \\
+age                             & 264.88        & 9.56    & 27.70   & $<0.001$ \\
+bmi                             & 5.68          & 24.88   & 0.23    & 0.820 \\
+children                        & 508.48        & 110.69  & 4.59    & $<0.001$ \\
+smoker\_yes                     & $-20\,195.20$ & 1655.11 & $-12.20$ & $<0.001$ \\
+smoker\_yes $\times$ bmi        & 1\,433.78     & 52.84   & 27.13   & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Bontà di adattamento:} $R^2=0.839$ e $R^2_{adj}=0.838$, contro
+$R^2=0.750$ e $R^2_{adj}=0.749$ del modello senza interazione: un incremento
+sostanziale. Il test $F$ incrementale tra il modello ristretto (senza
+interazione) e quello esteso conferma la significatività congiunta
+dell'aggiunta: $F(1,1331)=736.2$, $p\approx2.06\times10^{-129}$, in linea
+con il test $t$ sul singolo coefficiente ($t=27.13$, $p<0.001$).
+L'interazione è quindi altamente significativa.
+
+\textbf{Interpretazione:} l'effetto marginale di \texttt{bmi} risulta
+radicalmente diverso nei due gruppi. Per i non fumatori,
+$\partial\texttt{charges}/\partial\texttt{bmi} = \hat\beta_2 = \$5.68$
+per punto di BMI, non significativo ($p=0.820$); per i fumatori,
+$\partial\texttt{charges}/\partial\texttt{bmi} = \hat\beta_2+\hat\beta_5
+= \$5.68+\$1\,433.78 = \$1\,439.45$ per punto di BMI, un effetto imponente
+e altamente significativo. Questo spiega precisamente il pattern quasi
+discontinuo osservato nello Step 1 (Figura~\ref{fig:charges_factors}):
+l'obesità amplifica drasticamente i costi sanitari specificamente nei
+fumatori, mentre per i non fumatori il BMI ha un effetto marginale quasi
+trascurabile sulla spesa a parità di età e figli.
+
+Di conseguenza anche i coefficienti principali di \texttt{bmi} e
+\texttt{smoker\_yes} cambiano interpretazione: rappresentano il valore
+stimato quando l'altra variabile coinvolta nell'interazione è pari a zero,
+non più un effetto medio costante. In particolare \texttt{smoker\_yes} ora
+rappresenta l'effetto di essere fumatori quando \texttt{bmi}=0, un valore
+fuori dal range osservato (da 15.96 a 53.13) e privo di senso diretto.
+L'effetto complessivo del fumo, calcolato al BMI medio del campione
+($\overline{\texttt{bmi}}=30.66$), è
+$\hat\beta_4+\hat\beta_5\times30.66 = -20\,195.20+1\,433.78\times30.66
+\approx +23\,769$, coerente con la stima $+\$23\,810$ del modello senza
+interazione.
+
+\begin{table}[H]
+\centering
+\caption{Variance Inflation Factor, modello con interazione}
+\label{tab:vif_interazione}
+\begin{tabular}{lr}
+\toprule
+Regressore & VIF \\
+\midrule
+age                       & 1.015 \\
+bmi                       & 1.297 \\
+children                  & 1.002 \\
+smoker\_yes                & 25.14 \\
+smoker\_yes $\times$ bmi   & 25.44 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Il VIF evidenzia una collinearità elevata tra \texttt{smoker\_yes} e il
+termine di interazione (VIF $\approx25$), conseguenza meccanica dell'uso di
+\texttt{bmi} non centrata: nel sottogruppo dei fumatori,
+\texttt{smoker\_yes}$\times$\texttt{bmi} è quasi proporzionale a
+\texttt{bmi} stessa. Questo non compromette la validità del modello (i
+coefficienti restano stimati correttamente e il termine di interazione
+resta altamente significativo), ma riduce la precisione con cui si può
+scomporre l'effetto tra i due termini correlati; centrando \texttt{bmi}
+sulla propria media si ridurrebbe il VIF senza alterare fit, $R^2$ o
+significatività, a scapito della diretta interpretabilità dei coefficienti
+principali in corrispondenza di \texttt{bmi}=0.
+
+\begin{table}[H]
+\centering
+\caption{Confronto dei test di eteroschedasticità: senza vs. con interazione}
+\label{tab:bp_white_interazione}
+\begin{tabular}{lrrrr}
+\toprule
+Test & LM senza interazione & $p$-value & LM con interazione & $p$-value \\
+\midrule
+Breusch-Pagan & 116.98 & $2.36\times10^{-24}$ & 7.07  & $0.215$ \\
+White         & 128.25 & $4.65\times10^{-21}$ & 18.86 & $0.276$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Entrambi i test non rigettano più $H_0$ di omoschedasticità a
+$\alpha=0.05$: la statistica LM di Breusch-Pagan si riduce del 94.0\% (da
+116.98 a 7.07) e quella di White dell'85.3\% (da 128.25 a 18.86).
+L'inserimento del termine di interazione \textbf{risolve l'eteroschedasticità}
+rilevata nella Sezione 4.2, confermando l'ipotesi formulata a partire dal
+pattern osservato nei dati.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{output/14_residuals_interaction_comparison.png}
+\caption{Confronto Residui vs Fitted: modello senza interazione (sinistra)
+e con interazione \texttt{smoker\_yes}$\times$\texttt{bmi} (destra),
+colorati per \texttt{smoker}.}
+\label{fig:resid_interaction}
+\end{figure}
+
+Il pannello destro mostra come, per i non fumatori, i residui si
+concentrino ora quasi perfettamente attorno allo zero per bassi valori
+stimati (l'effetto di \texttt{bmi}, non più significativo per questo
+gruppo, non introduce più variabilità residua sistematica); per i fumatori
+la dispersione resta presente ma non mostra più il pattern parabolico
+osservato in precedenza.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{output/15_residuals_hist_interaction_comparison.png}
+\caption{Istogramma dei residui con densità normale sovrapposta: modello
+senza interazione (sinistra) e con interazione (destra).}
+\label{fig:hist_interaction}
+\end{figure}
+
+Va tuttavia notato un aspetto controintuitivo: skewness e curtosi dei
+residui peggiorano nel modello con interazione (skewness $1.22\to2.51$,
+curtosi $5.65\to10.25$), nonostante il netto miglioramento nei test BP e
+White. Questo non è contraddittorio: Breusch-Pagan e White verificano
+l'eteroschedasticità condizionata, cioè se la varianza dei residui dipende
+sistematicamente dai regressori tramite una regressione ausiliaria dei
+residui al quadrato; skewness e curtosi descrivono invece la forma non
+condizionata della distribuzione dei residui. Il modello con interazione
+si adatta così bene alla maggioranza delle osservazioni, in particolare ai
+non fumatori, i cui residui si concentrano quasi a zero (Figura~\ref{fig:resid_interaction}),
+che le poche osservazioni anomale, verosimilmente pazienti con condizioni
+di salute non osservate nel dataset, risultano relativamente più estreme,
+aumentando la curtosi pur in assenza di una relazione sistematica
+varianza-regressori.
+
+\subsection{Rimedio 3: Modello Lineare Robusto (RLM)}
+Il Modello Lineare Robusto (RLM) è stato applicato anche al modello
+originale (senza interazione), come ulteriore strumento diagnostico
+indipendente dalla specificazione adottata, per verificare quanto le
+osservazioni anomale (outlier) influenzino le stime OLS: a differenza dei
+minimi quadrati ordinari, l'RLM attribuisce un
+peso $w_i<1$ alle osservazioni con residuo elevato, riducendone
+l'impatto sulla stima dei coefficienti.
+
+\begin{table}[H]
+\centering
+\caption{Confronto coefficienti: OLS vs.\ RLM}
 \label{tab:rlm}
 \begin{tabular}{lrr}
 \toprule
@@ -530,12 +662,12 @@ children    & 472.98        & 442.21 \\
 \end{table}
 
 L'RLM assegna un peso molto basso ($<0.10$) a circa 200 osservazioni
-anomale, perlopiu' soggetti con \texttt{charges} molto elevate a parita' di
-eta'/BMI (verosimilmente per fattori di rischio non osservati nel
-dataset). Poiche' nel fit OLS tali outlier erano correlati con BMI elevato,
+anomale, perlopiù soggetti con \texttt{charges} molto elevate a parità di
+età/BMI (verosimilmente per fattori di rischio non osservati nel
+dataset). Poiché nel fit OLS tali outlier erano correlati con BMI elevato,
 l'OLS ne "gonfiava" artificialmente il coefficiente; una volta ridotto il
 loro peso, l'effetto di \texttt{bmi} si ridimensiona (da 322 a 57) mentre
-quello di \texttt{smoker\_yes} aumenta (da 23\,810 a 30\,685) -- risultato
+quello di \texttt{smoker\_yes} aumenta (da 23\,810 a 30\,685), risultato
 coerente con l'ipotesi di una interazione \texttt{smoker}$\times$\texttt{bmi}
 non modellata esplicitamente.
 
@@ -547,13 +679,17 @@ non modellata esplicitamente.
 \end{figure}
 
 \subsection{Sintesi}
-L'eteroschedasticità è confermata formalmente sia in lin-lin sia in
-log-lin: la trasformazione logaritmica da sola non basta, poichè la causa
-è strutturale (interazione mancante) piu' che di scala.L'\textbf{RLM} rivela quanto gli
-outlier distorcano i coefficienti OLS di \texttt{bmi} e
-\texttt{smoker\_yes}, utile complemento diagnostico, pur non risolvendo
-di per se' l'eteroschedasticita' (e' un rimedio per la non-robustezza agli
-outlier, non per la eteroschedasticita' in senso stretto).
+L'eteroschedasticità rilevata nel modello lin-lin originale (Sezione 4.2)
+trova una spiegazione strutturale nell'interazione tra \texttt{smoker} e
+\texttt{bmi}: includendo il termine \texttt{smoker\_yes}$\times$\texttt{bmi}
+nel modello, i test di Breusch-Pagan e White non rigettano più l'ipotesi di
+omoschedasticità, e l'$R^2$ sale da 0.750 a 0.839. La sola trasformazione
+logaritmica (Rimedio 1) non era invece sufficiente a risolvere il problema,
+confermando che la causa non era di scala ma di specificazione funzionale
+mancante. Il Modello Lineare Robusto (Rimedio 3), applicato al modello
+originale, resta un utile complemento diagnostico per individuare le
+osservazioni più influenti, indipendentemente dalla specificazione
+adottata.
 
 % =======================================================================
 \section{Modelli Predittivi: Regolarizzazione}
@@ -563,7 +699,7 @@ outlier, non per la eteroschedasticita' in senso stretto).
 A differenza degli Step precedenti, in questa sezione si utilizzano
 \textbf{tutti gli 8 regressori} codificati, lasciando che siano le
 tecniche di regolarizzazione a operare la selezione/riduzione delle
-variabili in modo automatico. Il campione e' stato suddiviso in training
+variabili in modo automatico. Il campione è stato suddiviso in training
 (80\%, $n=1069$) e test set (20\%, $n=268$); i regressori continui
 (\texttt{age}, \texttt{bmi}, \texttt{children}) sono stati standardizzati
 ($z=(x-\bar x)/s$, scaler stimato solo sul training set per evitare
@@ -575,16 +711,14 @@ Le tre famiglie di modelli risolvono:
 \text{LASSO:} \quad & \hat{\boldsymbol\beta}_{LASSO} = \arg\min_{\boldsymbol\beta} \left\{ \mathrm{SSE} + \lambda\sum_{j=1}^k |\beta_j| \right\} \\
 \text{Elastic Net:} \quad & \hat{\boldsymbol\beta}_{EN} = \arg\min_{\boldsymbol\beta} \left\{ \mathrm{SSE} + \lambda\Big[\alpha\sum_{j=1}^k |\beta_j| + \tfrac{1-\alpha}{2}\sum_{j=1}^k \beta_j^2\Big] \right\}
 \end{align}
-dove $\lambda\geq0$ e' il parametro di regolarizzazione (in \texttt{scikit-learn}: \texttt{alpha}) e
+dove $\lambda\geq0$ è il parametro di regolarizzazione (in \texttt{scikit-learn}: \texttt{alpha}) e
 $\alpha\in[0,1]$ (in \texttt{scikit-learn}: \texttt{l1\_ratio}) pesa il
-contributo relativo delle penalita' L1/L2 (testati $\alpha=0.1$, a
+contributo relativo delle penalità L1/L2 (testati $\alpha=0.1$, a
 prevalenza Ridge, e $\alpha=0.9$, a prevalenza LASSO).
 
-E' stata definita una griglia logaritmica decrescente di 100 valori,
-$\lambda\in\{10^{4},\dots,10^{-4}\}$, e per ciascun valore e' stata
-eseguita una \textbf{10-fold cross-validation} sul training set
-(\texttt{sklearn.model\_selection.KFold}, \texttt{cross\_val\_score})
-minimizzando l'MSE medio sui fold.
+È stata definita una griglia logaritmica decrescente di 100 valori,
+$\lambda\in\{10^{4},\dots,10^{-4}\}$, e per ciascun valore è stata
+eseguita una \textbf{10-fold cross-validation} sul training set.
 
 \subsection{Trace plot dei coefficienti}
 La Figura~\ref{fig:trace} mostra i \emph{trace plot}: per $\lambda$ grande
@@ -594,8 +728,8 @@ importanza, con \texttt{smoker\_yes} dominante seguito da \texttt{age} e
 \texttt{bmi}. Nel pannello LASSO si osserva la differenza qualitativa
 attesa rispetto a Ridge/Elastic Net: le variabili deboli (\texttt{sex\_male}
 e le dummy di \texttt{region}) restano \textbf{esattamente a zero} per un
-ampio intervallo di $\lambda$, mentre con la penalita' L2 (Ridge) si
-avvicinano a zero senza mai annullarsi -- e' la nota differenza strutturale
+ampio intervallo di $\lambda$, mentre con la penalità L2 (Ridge) si
+avvicinano a zero senza mai annullarsi: è la nota differenza strutturale
 tra shrinkage sparso (L1) e shrinkage continuo (L2).
 
 \begin{figure}[H]
@@ -607,17 +741,17 @@ tra shrinkage sparso (L1) e shrinkage continuo (L2).
 
 \subsection{Cross-Validation: MSE vs.\ $-\log(\lambda)$}
 La Figura~\ref{fig:cvmse} mostra le curve di CV-MSE (media $\pm$ errore
-standard sui 10 fold) in funzione di $-\log_{10}(\lambda)$, con linee
-verticali per $\lambda_{min}$ (minimo CV-MSE) e $\lambda_{1se}$ (regola
-dell'errore standard: il $\lambda$ piu' grande -- modello piu' parsimonioso
--- il cui CV-MSE resta entro 1 SE dal minimo, convenzione standard
-\texttt{glmnet}).
+standard sui 10 fold) in funzione di $-\log_{10}(\lambda)$. Il parametro
+di regolarizzazione ottimale $\lambda_{min}$ è individuato come il valore
+che minimizza il CV-MSE medio sui 10 fold, evidenziato nel grafico da una
+linea verticale: è questo l'unico criterio adottato per la scelta di
+$\lambda$.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{output/12_cv_mse_vs_loglambda.png}
 \caption{10-fold CV MSE in funzione di $-\log_{10}(\lambda)$, con
-$\lambda_{min}$ (rosso) e $\lambda_{1se}$ (verde).}
+$\lambda_{min}$ evidenziato (linea rossa).}
 \label{fig:cvmse}
 \end{figure}
 
@@ -653,73 +787,70 @@ OLS (no reg.)      & 0      & $35.48\times10^6$ & 5\,956 & 0.8069 & 8/8 \\
 
 \textbf{Selezione delle variabili:} LASSO azzera esattamente
 \texttt{sex\_male}, \texttt{region\_northwest}, \texttt{region\_southeast},
-\texttt{region\_southwest} -- le \emph{stesse identiche} variabili escluse
-dalla backward elimination e dalla Best Subset Selection nello Step~2
-(Sezione~3.4). Questa convergenza tra un criterio classico (basato su
-significativita'/BIC) e uno di regolarizzazione automatica (basato su
-penalita' L1) costituisce una forte conferma incrociata della robustezza
-del modello a 4 regressori.
+\texttt{region\_southwest}: le \emph{stesse identiche} variabili escluse
+dalla Best Subset Selection nello Step~2 (Sezione~3.4). Questa convergenza
+tra un criterio classico (basato su significatività/BIC) e uno di
+regolarizzazione automatica (basato su penalità L1) costituisce una forte
+conferma incrociata della robustezza del modello a 4 regressori.
 
-\textbf{Confronto degli MSE:} sorprendentemente l'OLS non regolarizzato
-ottiene il Test RMSE piu' basso, per un margine contenuto ($\approx\$10$
-su $\approx\$6\,000$, non rilevante in pratica). Cio' e' coerente con la
-diagnosi di multicollinearita' della Sez.~3.6: la regolarizzazione offre
-il massimo vantaggio quando vi e' overfitting da collinearita' o alta
-dimensionalita' ($p$ grande rispetto a $n$); qui invece $n=1069\gg p=8$ e i
+\textbf{Confronto degli MSE:} l'OLS non regolarizzato
+ottiene il Test RMSE più basso, per un margine contenuto ($\approx\$10$
+su $\approx\$6\,000$, non rilevante in pratica). Ciò è coerente con la
+diagnosi di multicollinearità della Sez.~3.6: la regolarizzazione offre
+il massimo vantaggio quando vi è overfitting da collinearità o alta
+dimensionalità ($p$ grande rispetto a $n$); qui invece $n=1069\gg p=8$ e i
 regressori sono quasi ortogonali (VIF$\approx1$), per cui Ridge ed Elastic
 Net convergono a $\lambda_{min}$ vicino a zero (confermato dal fatto che i
 $\lambda_{min}$ di Elastic Net si assestano su valori $\ll1$, non sul
-bordo della griglia). Il costo del LASSO (RMSE leggermente piu' alto)
-riflette il classico \emph{trade-off} bias-varianza: la penalita' L1
+bordo della griglia). Il costo del LASSO (RMSE leggermente più alto)
+riflette il classico \emph{trade-off} bias-varianza: la penalità L1
 introduce una piccola distorsione (shrinkage) sui coefficienti sopravvissuti
-(es.\ \texttt{bmi}: $1927\to1772$) in cambio di sparsita' e
-interpretabilita', non di un guadagno predittivo in questo specifico
+(es.\ \texttt{bmi}: $1927\to1772$) in cambio di sparsità e
+interpretabilità, non di un guadagno predittivo in questo specifico
 dataset.
 
 % =======================================================================
 \section{Conclusioni}
 % =======================================================================
 
-L'analisi ha permesso di caratterizzare in modo rigoroso i determinanti
-della spesa sanitaria nel dataset \emph{Medical Cost Personal Datasets}:
+L'analisi ha permesso di individuare  i regressori che influiscono la spesa sanitaria nel dataset \emph{Medical Cost Personal Datasets}:
 
 \begin{enumerate}[nosep]
     \item \textbf{Analisi descrittiva}: \texttt{charges} presenta una
     distribuzione fortemente asimmetrica e bimodale, generata
-    principalmente dalla dicotomia fumatore/non fumatore.
+    principalmente dalla variabile fumatore/non fumatore.
     \item \textbf{Modello inferenziale}: il modello finale
     $\texttt{charges} = \beta_0+\beta_1\texttt{age}+\beta_2\texttt{bmi}+\beta_3\texttt{children}+\beta_4\texttt{smoker\_yes}$,
-    selezionato concordemente da backward elimination e Best Subset
-    Selection (BIC), spiega il 75\% della varianza ($R^2_{adj}=0.749$) con
+    selezionato tramite BIC, spiega il 75\%
+    della varianza ($R^2_{adj}=0.749$) con
     tutti i coefficienti altamente significativi e nessuna
-    multicollinearita' rilevante (VIF$\approx1$, $k=14.16$). L'effetto di
+    multicollinearità rilevante (VIF$\approx1$, $k=291.6$). L'effetto di
     \texttt{smoker} ($+\$23\,810$) domina nettamente quelli di
     \texttt{age} ($+\$258$/anno), \texttt{bmi} ($+\$322$/punto) e
     \texttt{children} ($+\$473$/figlio). Le variabili \texttt{sex} e
     \texttt{region} non risultano determinanti significativi della spesa.
-    \item \textbf{Eteroschedasticita'}: confermata formalmente (Breusch-Pagan
-    e White, $p<0.001$) e \textbf{non risolta} dalla sola trasformazione
-    logaritmica, a causa di una probabile interazione strutturale
-    \texttt{smoker}$\times$\texttt{bmi} non catturata dal modello additivo.
-    Gli errori standard robusti HC3 correggono correttamente l'inferenza
-    (in particolare ampliando lo SE di \texttt{smoker\_yes} del 39.5\%),
-    mentre il Modello Lineare Robusto rivela che gli outlier distorcono
-    sensibilmente le stime OLS di \texttt{bmi} e \texttt{smoker\_yes}.
+    \item \textbf{Eteroschedasticità}: confermata formalmente nel modello
+    base (Breusch-Pagan e White, $p<0.001$) e non risolta dalla sola
+    trasformazione logaritmica. L'inserimento del termine di interazione
+    \texttt{smoker\_yes}$\times$\texttt{bmi} risolve invece il problema: i
+    test BP e White non rigettano più l'omoschedasticità ($p=0.215$ e
+    $p=0.276$) e l'$R^2$ sale da 0.750 a 0.839, con l'interazione altamente
+    significativa ($t=27.13$, $p<0.001$). L'effetto di \texttt{bmi} risulta
+    pressoché nullo per i non fumatori (\$5.68/punto, $p=0.820$) e imponente
+    per i fumatori (\$1\,439.45/punto), spiegando il pattern osservato
+    nell'analisi esplorativa.
     \item \textbf{Modelli predittivi}: Ridge, LASSO ed Elastic Net non
-    migliorano la capacita' predittiva rispetto all'OLS (Test RMSE
-    $\approx\$5\,956$--$6\,060$ in tutti i casi), coerentemente con
-    l'assenza di collinearita' e la bassa dimensionalita' del problema
-    ($n\gg p$). Il LASSO conferma pero' in modo del tutto indipendente,
-    tramite selezione automatica via penalita' L1, la stessa riduzione a 4
-    variabili individuata dai metodi classici -- una validazione
+    migliorano la capacità predittiva rispetto all'OLS (Test RMSE
+    compreso tra $\approx\$5\,956$ e $\$6\,060$ in tutti i casi), coerentemente con
+    l'assenza di collinearità e la bassa dimensionalità del problema
+    ($n\gg p$). Il LASSO conferma però in modo del tutto indipendente,
+    tramite selezione automatica via penalità L1, la stessa riduzione a 4
+    variabili individuata dalla Best Subset Selection: una validazione
     incrociata robusta della specificazione finale.
 \end{enumerate}
-
-\textbf{Limiti e sviluppi futuri}: i pattern residui osservati (Sez.~4)
-suggeriscono che un'estensione naturale del modello sarebbe l'inclusione
-di un termine di interazione \texttt{smoker}$\times$\texttt{bmi} (e
-eventualmente termini non lineari in \texttt{age}), che potrebbe
-contestualmente migliorare il fit e mitigare l'eteroschedasticita'
-residua, a scapito di una minore parsimonia interpretativa.
+\textbf{Limiti}s: nonostante il netto miglioramento ottenuto con il termine di
+interazione (Sezione 4.4), la distribuzione dei residui mostra ancora code pesanti (skewness e
+curtosi superiori al caso base), segno della presenza di alcune osservazioni anomale non spiegate
+dalle variabili disponibili, v
 
 \end{document}

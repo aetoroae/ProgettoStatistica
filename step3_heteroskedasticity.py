@@ -18,9 +18,8 @@ sns.set_theme(style="whitegrid")
 pd.set_option("display.width", 140)
 OUT = "output"
 
-# -----------------------------------------------------------------------
-# 0. CARICAMENTO E MODELLO FINALE (dallo Step 2)
-# -----------------------------------------------------------------------
+
+#CARICAMENTO E MODELLO FINALE (dallo Step 2)
 df = pd.read_csv("insurance.csv").drop_duplicates().reset_index(drop=True)
 df_enc = pd.get_dummies(df, columns=["sex", "smoker", "region"], drop_first=True, dtype=int)
 
@@ -38,9 +37,7 @@ fitted = model.fittedvalues
 resid = model.resid
 resid_std = model.get_influence().resid_studentized_internal  # residui studentizzati
 
-# -----------------------------------------------------------------------
-# 1. GRAFICI: RESIDUI vs FITTED, ISTOGRAMMA RESIDUI + NORMALE
-# -----------------------------------------------------------------------
+#GRAFICI: RESIDUI vs FITTED, ISTOGRAMMA RESIDUI + NORMALE
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
 sc = axes[0].scatter(fitted, resid, c=df_enc["smoker_yes"], cmap="coolwarm",
@@ -67,7 +64,7 @@ plt.savefig(f"{OUT}/07_residuals_diagnostics.png", dpi=150)
 plt.close()
 print(f"\n[Figura salvata] {OUT}/07_residuals_diagnostics.png")
 
-# Q-Q plot (complemento standard alla diagnosi di normalita')
+#Q-Q plot (complemento standard alla diagnosi di normalita')
 fig = sm.qqplot(resid_std, line="45", fit=True)
 fig.set_size_inches(5.5, 5.5)
 plt.title("Q-Q plot dei residui studentizzati")
@@ -76,9 +73,7 @@ plt.savefig(f"{OUT}/08_qqplot_residuals.png", dpi=150)
 plt.close()
 print(f"[Figura salvata] {OUT}/08_qqplot_residuals.png")
 
-# -----------------------------------------------------------------------
-# 2. TEST DI ETEROSCHEDASTICITA': BREUSCH-PAGAN e WHITE
-# -----------------------------------------------------------------------
+#TEST DI ETEROSCHEDASTICITA': BREUSCH-PAGAN e WHITE
 def run_bp_white(resid_, exog_, label):
     bp_lm, bp_lm_p, bp_f, bp_f_p = het_breuschpagan(resid_, exog_)
     wh_lm, wh_lm_p, wh_f, wh_f_p = het_white(resid_, exog_)
@@ -99,9 +94,7 @@ print("H0: Var(u_i | X_i) = sigma^2 costante (omoschedasticita')")
 print("H1: la varianza dell'errore dipende da X (eteroschedasticita')")
 res_linlin = run_bp_white(resid, X, "Modello lin-lin (charges ~ age+bmi+children+smoker_yes)")
 
-# -----------------------------------------------------------------------
-# 3. RIMEDIO 1: TRASFORMAZIONE LOGARITMICA DI Y + RIPETIZIONE DEL TEST
-# -----------------------------------------------------------------------
+#RIMEDIO 1: TRASFORMAZIONE LOGARITMICA DI Y + RIPETIZIONE DEL TEST
 print("\n" + "=" * 78)
 print("3.2 RIMEDIO 1: TRASFORMAZIONE LOGARITMICA log(charges) E RIPETIZIONE TEST")
 print("=" * 78)
@@ -110,7 +103,7 @@ model_log = sm.OLS(y_log, X).fit()
 print(model_log.summary())
 res_loglin = run_bp_white(model_log.resid, X, "Modello log-lin (log(charges) ~ age+bmi+children+smoker_yes)")
 
-# Grafico residui vs fitted anche per il modello log-lin (per confronto visivo)
+#Grafico residui vs fitted anche per il modello log-lin (per confronto visivo)
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 axes[0].scatter(fitted, resid, alpha=0.5, s=18, color="#4C72B0")
 axes[0].axhline(0, color="black", linestyle="--", linewidth=1)
@@ -128,9 +121,7 @@ plt.savefig(f"{OUT}/09_residuals_loglin_vs_linlin.png", dpi=150)
 plt.close()
 print(f"\n[Figura salvata] {OUT}/09_residuals_loglin_vs_linlin.png")
 
-# -----------------------------------------------------------------------
-# 4. RIMEDIO 2: ERRORI STANDARD ROBUSTI (HC0, HC1, HC3)
-# -----------------------------------------------------------------------
+#RIMEDIO 2: ERRORI STANDARD ROBUSTI (HC0, HC1, HC3)
 print("\n" + "=" * 78)
 print("3.3 RIMEDIO 2: STIMA CON ERRORI STANDARD ROBUSTI (HC) - modello lin-lin")
 print("=" * 78)
@@ -165,9 +156,7 @@ ad alta leva.
 
 print(model_hc3.summary())
 
-# -----------------------------------------------------------------------
-# 5. RIMEDIO 3: MODELLO LINEARE ROBUSTO (RLM)
-# -----------------------------------------------------------------------
+#RIMEDIO 3: MODELLO LINEARE ROBUSTO (RLM)
 print("\n" + "=" * 78)
 print("3.4 RIMEDIO 3: MODELLO LINEARE ROBUSTO (RLM, stimatore-M di Huber)")
 print("=" * 78)
@@ -182,8 +171,8 @@ coef_compare = pd.DataFrame({
 print("\nConfronto coefficienti OLS vs RLM:")
 print(coef_compare.round(3).to_string())
 
-# Pesi assegnati dall'RLM: osservazioni con residuo grande vengono
-# "downweighted" (peso < 1). Individuiamo le osservazioni piu' penalizzate.
+#Pesi assegnati dall'RLM: osservazioni con residuo grande vengono
+#"downweighted" (peso < 1). Individuiamo le osservazioni piu' penalizzate.
 weights = pd.Series(model_rlm.weights, index=df_enc.index, name="peso_RLM")
 low_weight = weights.sort_values().head(10)
 print("\n10 osservazioni con il peso RLM piu' basso (piu' penalizzate come outlier):")
@@ -201,9 +190,7 @@ plt.savefig(f"{OUT}/10_rlm_weights.png", dpi=150)
 plt.close()
 print(f"\n[Figura salvata] {OUT}/10_rlm_weights.png")
 
-# -----------------------------------------------------------------------
-# 6. SINTESI COMPARATIVA DEI TEST
-# -----------------------------------------------------------------------
+#SINTESI COMPARATIVA DEI TEST
 print("\n" + "=" * 78)
 print("3.5 SINTESI: TEST DI ETEROSCHEDASTICITA' PRIMA/DOPO IL RIMEDIO LOG")
 print("=" * 78)
