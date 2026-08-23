@@ -1,0 +1,128 @@
+==============================================================================
+4.0 TRAIN/TEST SPLIT E STANDARDIZZAZIONE
+==============================================================================
+Train: 1069 oss. | Test: 268 oss.
+
+Media/Std dei regressori continui dopo standardizzazione (train):
+      age  bmi  children
+mean  0.0  0.0       0.0
+std   1.0  1.0       1.0
+
+Griglia lambda: 100 valori, da 1.0e+04 a 1.0e-04
+
+==============================================================================
+4.1 10-FOLD CROSS-VALIDATION SULLA GRIGLIA DI LAMBDA
+==============================================================================
+
+--- Ridge ---
+  lambda.min =     0.6280   CV-MSE = 37,917,304.4  (RMSE=6,158)
+  lambda.1se =    25.9502   CV-MSE = 39,665,702.4  (modello piu' parsimonioso entro 1 SE dal minimo)
+  Test MSE (lambda.min) = 35,593,745.4   Test RMSE = 5,966   Test R2 = 0.8063
+  Regressori non nulli (|coef|>1e-8) a lambda.min: 8/8
+  Coefficienti (lambda.min):
+   age                  3470.09
+   bmi                  1924.90
+   children              637.03
+   sex_male              -95.42
+   smoker_yes          22991.55
+   region_northwest     -390.08
+   region_southeast     -826.87
+   region_southwest     -655.05
+
+--- LASSO ---
+  lambda.min =    79.2483   CV-MSE = 37,814,031.8  (RMSE=6,149)
+  lambda.1se =   422.9243   CV-MSE = 39,387,531.5  (modello piu' parsimonioso entro 1 SE dal minimo)
+  Test MSE (lambda.min) = 36,729,428.3   Test RMSE = 6,060   Test R2 = 0.8001
+  Regressori non nulli (|coef|>1e-8) a lambda.min: 4/8
+  Coefficienti (lambda.min):
+   age                  3412.74
+   bmi                  1772.46
+   children              571.12
+   sex_male               -0.00
+   smoker_yes          22539.73
+   region_northwest        0.00
+   region_southeast       -0.00
+   region_southwest       -0.00
+
+--- ElasticNet a=0.1 ---
+  lambda.min =     0.0008   CV-MSE = 37,917,289.1  (RMSE=6,158)
+  lambda.1se =     0.0320   CV-MSE = 39,877,003.2  (modello piu' parsimonioso entro 1 SE dal minimo)
+  Test MSE (lambda.min) = 35,615,484.2   Test RMSE = 5,968   Test R2 = 0.8062
+  Regressori non nulli (|coef|>1e-8) a lambda.min: 8/8
+  Coefficienti (lambda.min):
+   age                  3469.56
+   bmi                  1924.35
+   children              637.12
+   sex_male              -94.29
+   smoker_yes          22975.58
+   region_northwest     -389.77
+   region_southeast     -824.64
+   region_southwest     -654.30
+
+--- ElasticNet a=0.9 ---
+  lambda.min =     0.0072   CV-MSE = 37,917,285.2  (RMSE=6,158)
+  lambda.1se =     0.2984   CV-MSE = 40,003,144.6  (modello piu' parsimonioso entro 1 SE dal minimo)
+  Test MSE (lambda.min) = 35,620,609.5   Test RMSE = 5,968   Test R2 = 0.8062
+  Regressori non nulli (|coef|>1e-8) a lambda.min: 8/8
+  Coefficienti (lambda.min):
+   age                  3469.43
+   bmi                  1924.21
+   children              637.14
+   sex_male              -94.00
+   smoker_yes          22971.85
+   region_northwest     -389.59
+   region_southeast     -824.01
+   region_southwest     -654.02
+
+==============================================================================
+4.2 BASELINE OLS (senza regolarizzazione) sullo stesso train/test split
+==============================================================================
+Test MSE = 35,478,020.7   Test RMSE = 5,956   Test R2 = 0.8069
+Coefficienti OLS:
+age                  3472.98
+bmi                  1927.83
+children              636.50
+sex_male             -101.54
+smoker_yes          23077.76
+region_northwest     -391.76
+region_southeast     -838.92
+region_southwest     -659.14
+
+[Figura salvata] output/11_trace_plots.png
+[Figura salvata] output/12_cv_mse_vs_loglambda.png
+
+==============================================================================
+4.3 TABELLA RIASSUNTIVA DEI MODELLI
+==============================================================================
+                           lambda.min  CV-MSE (min)  lambda.1se      Test MSE  Test RMSE  Test R2  N. regressori non nulli
+Modello                                                                                                                   
+Ridge                          0.6280  3.791730e+07     25.9502  3.559375e+07  5966.0494   0.8063                        8
+LASSO                         79.2483  3.781403e+07    422.9243  3.672943e+07  6060.4809   0.8001                        4
+ElasticNet a=0.1               0.0008  3.791729e+07      0.0320  3.561548e+07  5967.8710   0.8062                        8
+ElasticNet a=0.9               0.0072  3.791729e+07      0.2984  3.562061e+07  5968.3004   0.8062                        8
+OLS (no regolarizzazione)      0.0000           NaN         NaN  3.547802e+07  5956.3429   0.8069                        8
+
+-> Modello con Test MSE piu' basso: 'OLS (no regolarizzazione)'
+
+Confronto coefficienti a lambda.min (tutti i modelli):
+                     Ridge     LASSO  ElasticNet a=0.1  ElasticNet a=0.9       OLS
+age                3470.09   3412.74           3469.56           3469.43   3472.98
+bmi                1924.90   1772.46           1924.35           1924.21   1927.83
+children            637.03    571.12            637.12            637.14    636.50
+sex_male            -95.42     -0.00            -94.29            -94.00   -101.54
+smoker_yes        22991.55  22539.73          22975.58          22971.85  23077.76
+region_northwest   -390.08      0.00           -389.77           -389.59   -391.76
+region_southeast   -826.87     -0.00           -824.64           -824.01   -838.92
+region_southwest   -655.05     -0.00           -654.30           -654.02   -659.14
+
+Variabili azzerate a lambda.min (|coef| < 1):
+  LASSO: ['sex_male', 'region_northwest', 'region_southeast', 'region_southwest']
+  ElasticNet a=0.1: nessuna
+  ElasticNet a=0.9: nessuna
+
+[Figura salvata] output/13_test_rmse_comparison.png
+[Oggetti salvati] output/step4_models.pkl
+
+==============================================================================
+STEP 4 COMPLETATO
+==============================================================================

@@ -1,0 +1,216 @@
+==============================================================================
+2.1 MODELLO OLS COMPLETO (lin-lin) - 'modello completo'
+==============================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                charges   R-squared:                       0.751
+Model:                            OLS   Adj. R-squared:                  0.749
+Method:                 Least Squares   F-statistic:                     500.0
+Date:                Sat, 22 Aug 2026   Prob (F-statistic):               0.00
+Time:                        20:22:17   Log-Likelihood:                -13538.
+No. Observations:                1337   AIC:                         2.709e+04
+Df Residuals:                    1328   BIC:                         2.714e+04
+Df Model:                           8                                         
+Covariance Type:            nonrobust                                         
+====================================================================================
+                       coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------------
+const            -1.194e+04    988.227    -12.079      0.000   -1.39e+04   -9997.900
+age                256.7646     11.912     21.555      0.000     233.396     280.133
+bmi                339.2504     28.611     11.857      0.000     283.122     395.379
+children           474.8205    137.897      3.443      0.001     204.301     745.340
+sex_male          -129.4815    333.195     -0.389      0.698    -783.128     524.165
+smoker_yes        2.385e+04    413.348     57.693      0.000     2.3e+04    2.47e+04
+region_northwest  -349.2265    476.824     -0.732      0.464   -1284.637     586.183
+region_southeast -1035.2656    478.867     -2.162      0.031   -1974.684     -95.847
+region_southwest  -960.0814    478.106     -2.008      0.045   -1898.007     -22.156
+==============================================================================
+Omnibus:                      299.816   Durbin-Watson:                   2.089
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              716.552
+Skew:                           1.211   Prob(JB):                    2.53e-156
+Kurtosis:                       5.646   Cond. No.                         311.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+==============================================================================
+2.2 CONFRONTO FORME FUNZIONALI
+==============================================================================
+                   Y  R2 (scala modello)  R2 adj (scala modello)         AIC         BIC  Skew residui  Kurt residui  JB p-value  R2 (scala $, ritrasformato)  RMSE (scala $, ritrasformato)
+Forma                                                                                                                                                                                       
+lin-lin      charges              0.7507                  0.7492  27094.2154  27140.9991        1.2105        5.6460         0.0                       0.7507                      6043.8499
+log-log  log_charges              0.7686                  0.7672   1627.4397   1674.2233        1.8500        7.6733         0.0                       0.4590                      8904.2798
+log-lin  log_charges              0.7676                  0.7662   1633.2417   1680.0253        1.6768        7.3232         0.0                       0.3799                      9533.0161
+lin-log      charges              0.7444                  0.7429  27127.8244  27174.6080        1.1809        5.4521         0.0                       0.7444                      6120.2931
+
+Note di lettura:
+ - R2/R2-adj/AIC/BIC "in scala modello" NON sono confrontabili tra modelli
+   con Y diversa (charges vs log(charges)) perche' la devianza totale da
+   spiegare cambia; sono confrontabili solo entro la stessa Y (lin-lin vs
+   lin-log; log-log vs log-lin).
+ - Skew/Kurt/JB dei residui indicano quanto la forma funzionale "mitiga le
+   asimmetrie": piu' skew e kurtosi si avvicinano a (0, 3) e piu' il
+   JB p-value e' alto, piu' i residui sono vicini alla normalita'
+   (assunzione chiave per la validita' dei t-test/F-test in campioni finiti).
+ - R2/RMSE "ritrasformati in $" sono riportati per trasparenza predittiva,
+   ma NON vanno usati per scegliere la forma funzionale: l'OLS lin-lin
+   minimizza esattamente la SSE in dollari per costruzione, quindi
+   vincerebbe quasi sempre questo confronto anche se i suoi residui sono
+   fortemente asimmetrici ed eteroschedastici (vedi Step 3).
+
+Fase 1 - vincitori entro lo stesso scale di Y:
+  Y=charges      -> lin-lin (domina lin-log su R2_adj, AIC, BIC, skew)
+  Y=log(charges) -> log-log per R2_adj/AIC/BIC; log-lin per skew/kurtosi (esito misto)
+
+Fase 2 - confronto cross-scale (lin-lin vs gruppo log):
+         R2 adj (scala modello)  Skew residui  Kurt residui
+Forma                                                      
+lin-lin                  0.7492        1.2105        5.6460
+log-log                  0.7672        1.8500        7.6733
+log-lin                  0.7662        1.6768        7.3232
+lin-log                  0.7429        1.1809        5.4521
+
+-> Forma funzionale scelta per lo Step 2: 'lin-lin' (parsimonia + miglior fit nel proprio gruppo + residui meno asimmetrici; l'eventuale log(Y) come rimedio e' demandata al test formale di eteroschedasticita' dello Step 3)
+[Figura salvata] output/06_functional_forms_comparison.png
+
+==============================================================================
+2.3 MODELLO COMPLETO SULLA FORMA 'lin-lin' (base di partenza per la selezione)
+==============================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                charges   R-squared:                       0.751
+Model:                            OLS   Adj. R-squared:                  0.749
+Method:                 Least Squares   F-statistic:                     500.0
+Date:                Sat, 22 Aug 2026   Prob (F-statistic):               0.00
+Time:                        20:22:17   Log-Likelihood:                -13538.
+No. Observations:                1337   AIC:                         2.709e+04
+Df Residuals:                    1328   BIC:                         2.714e+04
+Df Model:                           8                                         
+Covariance Type:            nonrobust                                         
+====================================================================================
+                       coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------------
+const            -1.194e+04    988.227    -12.079      0.000   -1.39e+04   -9997.900
+age                256.7646     11.912     21.555      0.000     233.396     280.133
+bmi                339.2504     28.611     11.857      0.000     283.122     395.379
+children           474.8205    137.897      3.443      0.001     204.301     745.340
+sex_male          -129.4815    333.195     -0.389      0.698    -783.128     524.165
+smoker_yes        2.385e+04    413.348     57.693      0.000     2.3e+04    2.47e+04
+region_northwest  -349.2265    476.824     -0.732      0.464   -1284.637     586.183
+region_southeast -1035.2656    478.867     -2.162      0.031   -1974.684     -95.847
+region_southwest  -960.0814    478.106     -2.008      0.045   -1898.007     -22.156
+==============================================================================
+Omnibus:                      299.816   Durbin-Watson:                   2.089
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              716.552
+Skew:                           1.211   Prob(JB):                    2.53e-156
+Kurtosis:                       5.646   Cond. No.                         311.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+------------------------------------------------------------------------------
+2.3a BACKWARD ELIMINATION (soglia p-value = 0.05)
+------------------------------------------------------------------------------
+  step 1: rimuovo 'sex_male' (p-value=0.6976)
+  step 2: rimuovo 'region_northwest' (p-value=0.4652)
+  step 3: rimuovo 'region_southwest' (p-value=0.0582)
+  step 4: rimuovo 'region_southeast' (p-value=0.1356)
+
+Regressori finali (backward elimination): ['age', 'bmi', 'children', 'smoker_yes']
+
+------------------------------------------------------------------------------
+2.3b BEST SUBSET SELECTION (ricerca esaustiva, criterio BIC)
+------------------------------------------------------------------------------
+Modelli valutati: 255  (2^8 - 1 combinazioni non vuote)
+
+Miglior modello per BIC (criterio piu' parsimonioso):
+  regressori: ('age', 'bmi', 'children', 'smoker_yes')
+  BIC=27118.74  R2_adj=0.7488
+
+Miglior modello per AIC:
+  regressori: ('age', 'bmi', 'children', 'smoker_yes', 'region_southeast', 'region_southwest')
+  AIC=27090.90  R2_adj=0.7495
+
+Miglior modello per R2 corretto:
+  regressori: ('age', 'bmi', 'children', 'smoker_yes', 'region_southeast', 'region_southwest')
+  R2_adj=0.7495
+
+Backward elimination -> ['age', 'bmi', 'children', 'smoker_yes']
+Best subset (BIC)    -> ['age', 'bmi', 'children', 'smoker_yes']
+I due criteri concordano: True
+
+==============================================================================
+2.4 MODELLO FINALE  (lin-lin, regressori selezionati)
+==============================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                charges   R-squared:                       0.750
+Model:                            OLS   Adj. R-squared:                  0.749
+Method:                 Least Squares   F-statistic:                     996.5
+Date:                Sat, 22 Aug 2026   Prob (F-statistic):               0.00
+Time:                        20:22:18   Log-Likelihood:                -13541.
+No. Observations:                1337   AIC:                         2.709e+04
+Df Residuals:                    1332   BIC:                         2.712e+04
+Df Model:                           4                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const       -1.21e+04    942.630    -12.835      0.000   -1.39e+04   -1.02e+04
+age          257.7728     11.910     21.644      0.000     234.409     281.137
+bmi          321.8708     27.388     11.752      0.000     268.143     375.599
+children     472.9751    137.879      3.430      0.001     202.492     743.458
+smoker_yes  2.381e+04    411.414     57.875      0.000     2.3e+04    2.46e+04
+==============================================================================
+Omnibus:                      300.944   Durbin-Watson:                   2.088
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              719.880
+Skew:                           1.215   Prob(JB):                    4.79e-157
+Kurtosis:                       5.650   Cond. No.                         292.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+Interpretazione sintetica:
+ - R2            = 0.7495  -> il modello spiega il 75.0% della varianza di charges
+ - R2 corretto   = 0.7488  (penalizza il numero di regressori: 4)
+ - F-statistic   = 996.48  (p-value = 0.00e+00)
+   -> H0: tutti i coefficienti (tranne l'intercetta) sono nulli. Il p-value <<0.05 porta a rigettare H0: il modello nel complesso e' significativo.
+ - t-test sui singoli regressori (H0: beta_j = 0):
+                  coef   std err        t   P>|t|     IC 2.5%    IC 97.5%
+const      -12098.8239  942.6298 -12.8352  0.0000 -13948.0247 -10249.6232
+age           257.7728   11.9098  21.6438  0.0000    234.4089    281.1368
+bmi           321.8708   27.3879  11.7523  0.0000    268.1427    375.5989
+children      472.9751  137.8788   3.4304  0.0006    202.4917    743.4584
+smoker_yes  23810.3992  411.4143  57.8745  0.0000  23003.3086  24617.4898
+
+==============================================================================
+2.5 MULTICOLLINEARITA': VIF e CONDITION NUMBER
+==============================================================================
+
+Variance Inflation Factor (per il modello finale):
+regressore    VIF
+     const 32.243
+       age  1.014
+       bmi  1.012
+  children  1.002
+smoker_yes  1.001
+
+Regola pratica: VIF < 5 assenza di problemi; 5 <= VIF < 10 attenzione;
+VIF >= 10 forte multicollinearita'. Il VIF della costante non e' interpretabile.
+
+Condition Number k (Belsley-Kuh-Welsch) = 14.16
+Condition Number (statsmodels, cross-check) = 291.58
+
+Regola pratica: k < 10  -> nessun problema
+                10 <= k < 30 -> multicollinearita' moderata
+                k >= 30 -> multicollinearita' severa
+
+
+[Oggetti salvati] output/step2_final_model.pkl
+
+==============================================================================
+STEP 2 COMPLETATO
+==============================================================================
