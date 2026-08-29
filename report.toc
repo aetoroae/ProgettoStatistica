@@ -1,0 +1,31 @@
+\babel@toc {italian}{}\relax 
+\babel@toc {italian}{}\relax 
+\contentsline {section}{\numberline {1}Introduzione}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Descrizione del dataset}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Obiettivi dell'analisi}{2}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Risultati attesi}{2}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Descrizione del dataset e Analisi Preliminare}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Statistiche descrittive}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Codifica delle variabili categoriche}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Distribuzione della variabile target}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Matrice di correlazione}{4}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Matrice di dispersione}{4}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Modelli Inferenziali, Forme Funzionali e Multicollinearità}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Il modello di regressione lineare multipla}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Modello completo}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Confronto dei possibili modelli}{6}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Selezione del modello: Best Subset Selection}{7}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Analisi del modello finale}{7}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Multicollinearità}{8}{subsection.3.6}%
+\contentsline {section}{\numberline {4}Eteroschedasticità e Analisi dei Residui}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Analisi grafica}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Test di Breusch-Pagan e White}{9}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Rimedio 1: inclusione del termine di interazione smoker $\times $ bmi}{10}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Rimedio 2: Modello Lineare Robusto (RLM)}{12}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Sintesi}{12}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Modelli Predittivi: Regolarizzazione}{13}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Impostazione}{13}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Trace plot dei coefficienti}{13}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Cross-Validation: MSE vs.\ $-\log (\lambda )$}{14}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Confronto dei modelli}{15}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Conclusioni}{16}{section.6}%

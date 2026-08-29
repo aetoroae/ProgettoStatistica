@@ -38,10 +38,10 @@ print("4.0 TRAIN/TEST SPLIT E STANDARDIZZAZIONE")
 print("=" * 78)
 print(f"Train: {X_train.shape[0]} oss. | Test: {X_test.shape[0]} oss.")
 
-# Standardizzazione SOLO dei regressori continui (age, bmi, children).
-# Le dummy (0/1) restano invariate: sono gia' su scala comparabile e
-# la loro varianza (p*(1-p)) ha un significato diretto come "quota di
-# popolazione nella categoria", che si perderebbe standardizzandole.
+#Standardizzazione SOLO dei regressori continui (age, bmi, children).
+#Le dummy (0/1) restano invariate: sono gia' su scala comparabile e
+#la loro varianza (p*(1-p)) ha un significato diretto come "quota di
+#popolazione nella categoria", che si perderebbe standardizzandole.
 scaler = StandardScaler()
 X_train_s = X_train.copy()
 X_test_s = X_test.copy()
@@ -83,9 +83,9 @@ def lambda_1se(alphas_grid, means, ses):
     entro 1 SE dal minimo."""
     i_min = np.argmin(means)
     threshold = means[i_min] + ses[i_min]
-    # alphas_grid e' decrescente: cerchiamo tra gli alpha >= alpha_min
-    # (piu' regolarizzazione = piu' a sinistra nella griglia) quello piu'
-    # grande che soddisfa la soglia
+    #alphas_grid e' decrescente: cerchiamo tra gli alpha >= alpha_min
+    #(piu' regolarizzazione = piu' a sinistra nella griglia) quello piu'
+    #grande che soddisfa la soglia
     candidates = [i for i in range(i_min + 1) if means[i] <= threshold]
     i_1se = min(candidates) if candidates else i_min
     return i_1se, i_min
@@ -109,7 +109,7 @@ for name, spec in MODELS.items():
     lam_min, lam_1se = alphas[i_min], alphas[i_1se]
     mse_min, mse_1se = means[i_min], means[i_1se]
 
-    # Refit sul training set completo con lambda ottimale (lambda.min)
+    #Refit sul training set completo con lambda ottimale (lambda.min)
     best_est = spec["cls"](alpha=lam_min, **spec["kwargs"])
     best_est.fit(X_train_s, y_train)
     y_pred_test = best_est.predict(X_test_s)
